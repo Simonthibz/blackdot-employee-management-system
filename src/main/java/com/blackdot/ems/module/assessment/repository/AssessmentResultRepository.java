@@ -34,4 +34,13 @@ public interface AssessmentResultRepository extends JpaRepository<AssessmentResu
     
     @Query("SELECT COUNT(ar) FROM AssessmentResult ar WHERE ar.quarter = :quarter AND ar.year = :year")
     Long countTotalByQuarterAndYear(@Param("quarter") Quarter quarter, @Param("year") Integer year);
+    
+    @Query("SELECT COUNT(DISTINCT ar.user.id) FROM AssessmentResult ar WHERE ar.assessment.id = :assessmentId")
+    Long countDistinctUsersByAssessmentId(@Param("assessmentId") Long assessmentId);
+    
+    @Query("SELECT COUNT(ar) FROM AssessmentResult ar WHERE ar.assessment.id = :assessmentId AND ar.completedAt IS NULL")
+    Long countPendingByAssessmentId(@Param("assessmentId") Long assessmentId);
+    
+    @Query("SELECT COUNT(ar) FROM AssessmentResult ar WHERE ar.assessment.id = :assessmentId AND ar.completedAt IS NOT NULL")
+    Long countCompletedByAssessmentId(@Param("assessmentId") Long assessmentId);
 }

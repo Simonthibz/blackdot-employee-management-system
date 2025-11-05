@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Blackdot EMS</title>
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/reports.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -17,73 +18,98 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="mb-3">
-            <h2><i class="fas fa-chart-bar"></i> Reports & Analytics</h2>
-            <p>Generate reports and view analytics for employees and assessments</p>
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <div>
+                    <h2 class="page-title">Reports & Analytics</h2>
+                    <p class="page-subtitle">Generate reports and view analytics for employees and assessments</p>
+                </div>
+            </div>
         </div>
 
         <!-- Report Generation Cards -->
-        <div class="dashboard-grid">
+        <div class="reports-grid">
             <!-- Employee Reports -->
-            <div class="table-container p-3">
-                <h4><i class="fas fa-users"></i> Employee Reports</h4>
-                <p>Generate comprehensive employee reports with all active employees, their roles, and basic information.</p>
-                <div style="margin-top: 1rem;">
-                    <button onclick="generateEmployeeReport('pdf')" class="btn btn-success btn-sm" style="margin-right: 0.5rem;">
-                        <i class="fas fa-file-pdf"></i> PDF Report
-                    </button>
-                    <button onclick="generateEmployeeReport('excel')" class="btn btn-warning btn-sm">
-                        <i class="fas fa-file-excel"></i> Excel Report
-                    </button>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-users"></i> Employee Reports</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Generate comprehensive employee reports with all active employees, their roles, and basic information.</p>
+                    <div class="btn-group">
+                        <button onclick="generateEmployeeReport('pdf')" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-pdf"></i> PDF Report
+                        </button>
+                        <button onclick="generateEmployeeReport('excel')" class="btn btn-warning btn-sm">
+                            <i class="fas fa-file-excel"></i> Excel Report
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Quarterly Assessment Reports -->
-            <div class="table-container p-3">
-                <h4><i class="fas fa-clipboard-list"></i> Assessment Reports</h4>
-                <p>Generate quarterly assessment reports with performance analytics.</p>
-                <div style="margin-top: 1rem;">
-                    <select id="quarterSelect" class="form-control" style="margin-bottom: 0.5rem;">
-                        <option value="Q1">Q1 - January to March</option>
-                        <option value="Q2">Q2 - April to June</option>
-                        <option value="Q3">Q3 - July to September</option>
-                        <option value="Q4" selected>Q4 - October to December</option>
-                    </select>
-                    <select id="yearSelect" class="form-control" style="margin-bottom: 1rem;">
-                        <option value="2025" selected>2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                    </select>
-                    <button onclick="generateQuarterlyReport('pdf')" class="btn btn-success btn-sm" style="margin-right: 0.5rem;">
-                        <i class="fas fa-file-pdf"></i> PDF Report
-                    </button>
-                    <button onclick="generateQuarterlyReport('excel')" class="btn btn-warning btn-sm">
-                        <i class="fas fa-file-excel"></i> Excel Report
-                    </button>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-clipboard-list"></i> Assessment Reports</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Generate quarterly assessment reports with performance analytics.</p>
+                    <div class="form-group mb-2">
+                        <select id="quarterSelect" class="form-control">
+                            <option value="Q1">Q1 - January to March</option>
+                            <option value="Q2">Q2 - April to June</option>
+                            <option value="Q3">Q3 - July to September</option>
+                            <option value="Q4" selected>Q4 - October to December</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <select id="yearSelect" class="form-control">
+                            <option value="2025" selected>2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="generateQuarterlyReport('pdf')" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-pdf"></i> PDF Report
+                        </button>
+                        <button onclick="generateQuarterlyReport('excel')" class="btn btn-warning btn-sm">
+                            <i class="fas fa-file-excel"></i> Excel Report
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Employee Assessment History -->
-            <div class="table-container p-3">
-                <h4><i class="fas fa-history"></i> Employee History</h4>
-                <p>Generate individual employee assessment history reports.</p>
-                <div style="margin-top: 1rem;">
-                    <input type="text" id="employeeIdInput" placeholder="Enter Employee ID" class="form-control" style="margin-bottom: 1rem;">
-                    <button onclick="generateEmployeeHistory('pdf')" class="btn btn-success btn-sm" style="margin-right: 0.5rem;">
-                        <i class="fas fa-file-pdf"></i> PDF Report
-                    </button>
-                    <button onclick="generateEmployeeHistory('excel')" class="btn btn-warning btn-sm">
-                        <i class="fas fa-file-excel"></i> Excel Report
-                    </button>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-history"></i> Employee History</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">Generate individual employee assessment history reports.</p>
+                    <div class="form-group mb-3">
+                        <input type="text" id="employeeIdInput" placeholder="Enter Employee ID" class="form-control">
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="generateEmployeeHistory('pdf')" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-pdf"></i> PDF Report
+                        </button>
+                        <button onclick="generateEmployeeHistory('excel')" class="btn btn-warning btn-sm">
+                            <i class="fas fa-file-excel"></i> Excel Report
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Analytics Dashboard -->
-            <div class="table-container p-3">
-                <h4><i class="fas fa-analytics"></i> Live Analytics</h4>
-                <p>View real-time analytics for current quarter assessments.</p>
-                <div style="margin-top: 1rem;">
-                    <button onclick="loadAnalytics()" class="btn btn-success">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-chart-line"></i> Live Analytics</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-description">View real-time analytics for current quarter assessments.</p>
+                    <button onclick="loadAnalytics()" class="btn btn-primary">
                         <i class="fas fa-chart-line"></i> Load Analytics
                     </button>
                 </div>
@@ -91,75 +117,90 @@
         </div>
 
         <!-- Analytics Section -->
-        <div id="analyticsSection" style="display: none; margin-top: 2rem;">
-            <h3><i class="fas fa-chart-line"></i> Assessment Analytics</h3>
-            
-            <!-- Statistics Cards -->
-            <div class="dashboard-grid" id="analyticsStats">
-                <!-- Statistics will be loaded here -->
+        <div id="analyticsSection" style="display: none;">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fas fa-chart-line"></i> Assessment Analytics</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Statistics Cards -->
+                    <div id="analyticsStats" class="stats-grid">
+                        <!-- Statistics will be loaded here -->
+                    </div>
+                </div>
             </div>
 
             <!-- Charts -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
-                <div class="table-container p-3">
-                    <h4>Score Distribution</h4>
-                    <div style="position: relative; height: 250px;">
-                        <canvas id="scoreDistributionChart"></canvas>
+            <div class="charts-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-bar"></i> Score Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="scoreDistributionChart"></canvas>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="table-container p-3">
-                    <h4>Department Performance</h4>
-                    <div style="position: relative; height: 250px;">
-                        <canvas id="departmentChart"></canvas>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-building"></i> Department Performance</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Recent Reports Table -->
-        <div class="table-container mt-3">
-            <div class="p-3">
-                <h4><i class="fas fa-clock"></i> Quick Actions</h4>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-clock"></i> Quick Actions</h3>
             </div>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Report Type</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><i class="fas fa-users"></i> All Employees</td>
-                        <td>Complete employee list with roles and status</td>
-                        <td>
-                            <button onclick="generateEmployeeReport('pdf')" class="btn btn-sm btn-success">
-                                <i class="fas fa-download"></i> PDF
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><i class="fas fa-clipboard-list"></i> Current Quarter</td>
-                        <td>Assessment results for Q4 2025</td>
-                        <td>
-                            <button onclick="generateCurrentQuarterReport()" class="btn btn-sm btn-success">
-                                <i class="fas fa-download"></i> PDF
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><i class="fas fa-chart-bar"></i> Analytics Dashboard</td>
-                        <td>Real-time performance metrics and charts</td>
-                        <td>
-                            <button onclick="loadAnalytics()" class="btn btn-sm btn-warning">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Report Type</th>
+                            <th>Description</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-users"></i> All Employees</td>
+                            <td>Complete employee list with roles and status</td>
+                            <td class="text-center">
+                                <button onclick="generateEmployeeReport('pdf')" class="btn btn-sm btn-success">
+                                    <i class="fas fa-download"></i> PDF
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-clipboard-list"></i> Current Quarter</td>
+                            <td>Assessment results for Q4 2025</td>
+                            <td class="text-center">
+                                <button onclick="generateCurrentQuarterReport()" class="btn btn-sm btn-success">
+                                    <i class="fas fa-download"></i> PDF
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-chart-bar"></i> Analytics Dashboard</td>
+                            <td>Real-time performance metrics and charts</td>
+                            <td class="text-center">
+                                <button onclick="loadAnalytics()" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -368,19 +409,7 @@
 
         function showNotification(message, type) {
             const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 1rem 1.5rem;
-                border-radius: 4px;
-                color: white;
-                font-weight: 500;
-                z-index: 3000;
-                background-color: ${type === 'success' ? '#27ae60' : 
-                                   type === 'warning' ? '#f39c12' : 
-                                   type === 'error' ? '#e74c3c' : '#3498db'};
-            `;
+            notification.className = `notification ${type}`;
             notification.textContent = message;
             
             document.body.appendChild(notification);

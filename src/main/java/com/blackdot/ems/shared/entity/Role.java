@@ -17,8 +17,8 @@ public class Role {
     private Integer id;
     
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private ERole name;
+    @Column(length = 20, nullable = true)
+    private ERole name; // Null for custom roles, set for system roles
     
     // Enhanced fields for dynamic role management
     @Column(name = "display_name", length = 100)

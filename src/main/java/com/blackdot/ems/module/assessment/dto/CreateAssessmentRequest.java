@@ -24,6 +24,17 @@ public class CreateAssessmentRequest {
     
     private Boolean isActive = true;
     
+    @Size(max = 10)
+    private String quarter; // Q1, Q2, Q3, Q4
+    
+    private Integer year;
+    
+    @Min(1)
+    @Max(10)
+    private Integer maxAttempts = 3;
+    
+    private String deadline; // ISO format date string
+    
     // Constructors
     public CreateAssessmentRequest() {}
     
@@ -42,4 +53,16 @@ public class CreateAssessmentRequest {
     
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    
+    public String getQuarter() { return quarter; }
+    public void setQuarter(String quarter) { this.quarter = quarter; }
+    
+    public Integer getYear() { return year; }
+    public void setYear(Integer year) { this.year = year; }
+    
+    public Integer getMaxAttempts() { return maxAttempts; }
+    public void setMaxAttempts(Integer maxAttempts) { this.maxAttempts = maxAttempts; }
+    
+    public String getDeadline() { return deadline; }
+    public void setDeadline(String deadline) { this.deadline = deadline; }
 }

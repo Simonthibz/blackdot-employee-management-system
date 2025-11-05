@@ -57,6 +57,14 @@ public class AssessmentService {
         assessment.setPassingScore(request.getPassingScore());
         assessment.setTimeLimitMinutes(request.getTimeLimitMinutes());
         assessment.setIsActive(request.getIsActive());
+        assessment.setQuarter(request.getQuarter());
+        assessment.setYear(request.getYear());
+        assessment.setMaxAttempts(request.getMaxAttempts());
+        
+        // Parse deadline from ISO string
+        if (request.getDeadline() != null && !request.getDeadline().isEmpty()) {
+            assessment.setDeadline(LocalDateTime.parse(request.getDeadline() + "T23:59:59"));
+        }
         
         Assessment savedAssessment = assessmentRepository.save(assessment);
         return convertToResponse(savedAssessment);
@@ -71,6 +79,14 @@ public class AssessmentService {
         assessment.setPassingScore(request.getPassingScore());
         assessment.setTimeLimitMinutes(request.getTimeLimitMinutes());
         assessment.setIsActive(request.getIsActive());
+        assessment.setQuarter(request.getQuarter());
+        assessment.setYear(request.getYear());
+        assessment.setMaxAttempts(request.getMaxAttempts());
+        
+        // Parse deadline from ISO string
+        if (request.getDeadline() != null && !request.getDeadline().isEmpty()) {
+            assessment.setDeadline(LocalDateTime.parse(request.getDeadline() + "T23:59:59"));
+        }
         
         Assessment updatedAssessment = assessmentRepository.save(assessment);
         return convertToResponse(updatedAssessment);
@@ -105,8 +121,9 @@ public class AssessmentService {
         
         Question savedQuestion = questionRepository.save(question);
         
-        // Add options for multiple choice questions
-        if (questionType == QuestionType.MULTIPLE_CHOICE && request.getOptions() != null) {
+        // Add options for multiple choice and true/false questions
+        if ((questionType == QuestionType.MULTIPLE_CHOICE || questionType == QuestionType.TRUE_FALSE) 
+            && request.getOptions() != null) {
             Set<QuestionOption> options = new HashSet<>();
             for (CreateQuestionRequest.QuestionOptionRequest optionReq : request.getOptions()) {
                 QuestionOption option = new QuestionOption();
@@ -126,6 +143,12 @@ public class AssessmentService {
             throw new ResourceNotFoundException("Assessment", "id", assessmentId);
         }
         return questionRepository.findByAssessmentIdOrderByCreatedAtAsc(assessmentId);
+    }
+    
+    public void deleteQuestion(Long questionId) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
+        questionRepository.delete(question);
     }
     
     public AssessmentResultResponse startAssessment(Long assessmentId, Long userId) {
@@ -205,20 +228,16 @@ public class AssessmentService {
                 
                 boolean isCorrect = false;
                 
-                if (question.getQuestionType() == QuestionType.MULTIPLE_CHOICE && answerReq.getSelectedOptionId() != null) {
+                if ((question.getQuestionType() == QuestionType.MULTIPLE_CHOICE || 
+                     question.getQuestionType() == QuestionType.TRUE_FALSE) && 
+                     answerReq.getSelectedOptionId() != null) {
+                    // Handle both MULTIPLE_CHOICE and TRUE_FALSE as option-based questions
                     QuestionOption selectedOption = questionOptionRepository.findById(answerReq.getSelectedOptionId())
                             .orElse(null);
                     if (selectedOption != null && selectedOption.getQuestion().getId().equals(question.getId())) {
                         userAnswer.setSelectedOption(selectedOption);
                         isCorrect = selectedOption.getIsCorrect();
                     }
-                } else if (question.getQuestionType() == QuestionType.TRUE_FALSE && answerReq.getTextAnswer() != null) {
-                    userAnswer.setTextAnswer(answerReq.getTextAnswer());
-                    // For true/false, you'd need to store the correct answer in the question or option
-                    // For now, we'll assume manual grading is required
-                } else if (answerReq.getTextAnswer() != null) {
-                    userAnswer.setTextAnswer(answerReq.getTextAnswer());
-                    // Text and essay questions require manual grading
                 }
                 
                 userAnswer.setIsCorrect(isCorrect);
@@ -273,17 +292,40 @@ public class AssessmentService {
     private AssessmentResponse convertToResponse(Assessment assessment) {
         Integer questionCount = questionRepository.countByAssessmentId(assessment.getId()).intValue();
         
-        return new AssessmentResponse(
-                assessment.getId(),
-                assessment.getTitle(),
-                assessment.getDescription(),
-                assessment.getPassingScore(),
-                assessment.getTimeLimitMinutes(),
-                assessment.getIsActive(),
-                questionCount,
-                assessment.getCreatedAt(),
-                assessment.getUpdatedAt()
-        );
+        // Calculate total attempts and pass rate
+        List<AssessmentResult> results = assessmentResultRepository.findByAssessmentIdOrderByCreatedAtDesc(assessment.getId());
+        Integer totalAttempts = results.size();
+        long passedCount = results.stream().filter(r -> r.getPassed() != null && r.getPassed()).count();
+        Double passRate = totalAttempts > 0 ? (passedCount * 100.0) / totalAttempts : 0.0;
+        
+        // Count unique employees who took this assessment
+        Long employeesTaken = assessmentResultRepository.countDistinctUsersByAssessmentId(assessment.getId());
+        
+        // Count pending and completed attempts
+        Long pendingAttempts = assessmentResultRepository.countPendingByAssessmentId(assessment.getId());
+        Long completedAttempts = assessmentResultRepository.countCompletedByAssessmentId(assessment.getId());
+        
+        AssessmentResponse response = new AssessmentResponse();
+        response.setId(assessment.getId());
+        response.setTitle(assessment.getTitle());
+        response.setDescription(assessment.getDescription());
+        response.setPassingScore(assessment.getPassingScore());
+        response.setTimeLimitMinutes(assessment.getTimeLimitMinutes());
+        response.setIsActive(assessment.getIsActive());
+        response.setQuestionCount(questionCount);
+        response.setQuarter(assessment.getQuarter());
+        response.setYear(assessment.getYear());
+        response.setMaxAttempts(assessment.getMaxAttempts());
+        response.setDeadline(assessment.getDeadline());
+        response.setTotalAttempts(totalAttempts);
+        response.setPassRate(passRate);
+        response.setEmployeesTaken(employeesTaken);
+        response.setPendingAttempts(pendingAttempts);
+        response.setCompletedAttempts(completedAttempts);
+        response.setCreatedAt(assessment.getCreatedAt());
+        response.setUpdatedAt(assessment.getUpdatedAt());
+        
+        return response;
     }
     
     private AssessmentResultResponse convertToResultResponse(AssessmentResult result) {
@@ -305,5 +347,9 @@ public class AssessmentService {
         response.setYear(result.getYear());
         response.setCreatedAt(result.getCreatedAt());
         return response;
+    }
+    
+    public Long getTotalEmployeeCount() {
+        return userRepository.countByIsActiveTrue();
     }
 }

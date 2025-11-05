@@ -1,10 +1,12 @@
 // Role Management JavaScript
 
 let allRoles = [];
+let availablePermissions = [];
 
 // Load roles on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadActiveRoles();
+    loadAvailablePermissions();
 });
 
 // Get JWT token from localStorage
@@ -90,6 +92,22 @@ function loadCustomRoles() {
     .catch(error => console.error('Error loading custom roles:', error));
 }
 
+// Load available permissions
+function loadAvailablePermissions() {
+    fetch('/api/roles/permissions', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + getToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        availablePermissions = data;
+    })
+    .catch(error => console.error('Error loading permissions:', error));
+}
+
 // Display roles in table
 function displayRoles(roles) {
     const tbody = document.getElementById('rolesTableBody');
@@ -101,8 +119,8 @@ function displayRoles(roles) {
     
     tbody.innerHTML = roles.map(role => `
         <tr>
-            <td><strong>${role.displayName || role.name}</strong></td>
-            <td>${role.name || '-'}</td>
+            <td><strong>${role.displayName || role.name || '-'}</strong></td>
+            <td>${role.name ? role.name.replace('ROLE_', '') : 'Custom'}</td>
             <td>
                 <span class="badge ${role.isSystemRole ? 'badge-primary' : 'badge-info'}">
                     ${role.isSystemRole ? 'System' : 'Custom'}
@@ -115,31 +133,174 @@ function displayRoles(roles) {
                     ${role.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td>
-                <button onclick="viewRole(${role.id})" class="btn btn-sm btn-info" title="View">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editRole(${role.id})" class="btn btn-sm btn-warning" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                ${!role.isSystemRole ? `
-                    <button onclick="deleteRole(${role.id})" class="btn btn-sm btn-danger" title="Delete">
-                        <i class="fas fa-trash"></i>
+            <td class="text-center">
+                <div class="action-menu">
+                    <button class="action-btn" onclick="toggleActionMenu(event, ${role.id})">
+                        <i class="fas fa-ellipsis-v"></i>
                     </button>
-                ` : ''}
+                    <div class="action-dropdown" id="actionMenu${role.id}">
+                        <button class="action-item" onclick="viewRole(${role.id})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        ${!role.isSystemRole ? `
+                            <button class="action-item" onclick="editRole(${role.id})">
+                                <i class="fas fa-edit"></i> Edit Role
+                            </button>
+                            <button class="action-item danger" onclick="deleteRole(${role.id})">
+                                <i class="fas fa-trash"></i> Delete Role
+                            </button>
+                        ` : `
+                            <button class="action-item" onclick="editRole(${role.id})">
+                                <i class="fas fa-eye"></i> View Role
+                            </button>
+                        `}
+                    </div>
+                </div>
             </td>
         </tr>
     `).join('');
 }
 
+// Toggle action menu
+function toggleActionMenu(event, roleId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`actionMenu${roleId}`);
+    const allMenus = document.querySelectorAll('.action-dropdown');
+    
+    allMenus.forEach(m => {
+        if (m !== menu) m.classList.remove('show');
+    });
+    
+    menu.classList.toggle('show');
+}
+
+// Close action menus when clicking outside
+document.addEventListener('click', function() {
+    document.querySelectorAll('.action-dropdown').forEach(menu => {
+        menu.classList.remove('show');
+    });
+});
+
 // Show create role modal
 function showCreateRoleModal() {
-    document.getElementById('modalTitle').textContent = 'Create Custom Role';
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-shield"></i> Create Custom Role';
     document.getElementById('roleForm').reset();
     document.getElementById('roleId').value = '';
     document.getElementById('isSystemRole').value = 'false';
     document.getElementById('statusGroup').style.display = 'none';
-    document.getElementById('roleModal').style.display = 'block';
+    document.getElementById('roleTypeSection').style.display = 'block';
+    document.getElementById('displayName').disabled = false;
+    
+    // Load permissions checkboxes
+    renderPermissionsCheckboxes([]);
+    
+    document.getElementById('roleModal').style.display = 'flex';
+}
+
+// Render permissions as checkboxes
+function renderPermissionsCheckboxes(selectedPermissions) {
+    const container = document.getElementById('permissionsContainer');
+    
+    if (!availablePermissions || availablePermissions.length === 0) {
+        container.innerHTML = '<p class="text-center" style="color: #6c757d;">No permissions available</p>';
+        return;
+    }
+    
+    // Group permissions by category
+    const grouped = groupPermissionsByCategory(availablePermissions);
+    
+    let html = '';
+    for (const [category, permissions] of Object.entries(grouped)) {
+        html += `
+            <div class="permission-category">
+                <div class="permission-category-title">
+                    <i class="fas fa-${getCategoryIcon(category)}"></i>
+                    ${category}
+                </div>
+                <div class="permission-grid">
+        `;
+        
+        permissions.forEach(permission => {
+            const isChecked = selectedPermissions.includes(permission);
+            const permissionLabel = permission.replace(/_/g, ' ').toLowerCase()
+                .replace(/\b\w/g, l => l.toUpperCase());
+            
+            html += `
+                <div class="permission-item">
+                    <input type="checkbox" 
+                           id="perm_${permission}" 
+                           name="permissions" 
+                           value="${permission}"
+                           ${isChecked ? 'checked' : ''}>
+                    <label for="perm_${permission}">${permissionLabel}</label>
+                </div>
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+// Group permissions by category
+function groupPermissionsByCategory(permissions) {
+    const groups = {};
+    
+    permissions.forEach(permission => {
+        const parts = permission.split('_');
+        const category = parts.length > 1 ? parts.slice(1).join(' ') : 'General';
+        const mainCategory = parts.length > 1 ? parts[1].toLowerCase() : 'general';
+        
+        const categoryName = mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1);
+        
+        if (!groups[categoryName]) {
+            groups[categoryName] = [];
+        }
+        groups[categoryName].push(permission);
+    });
+    
+    return groups;
+}
+
+// Get category icon
+function getCategoryIcon(category) {
+    const icons = {
+        'Employee': 'users',
+        'Department': 'building',
+        'Task': 'tasks',
+        'Role': 'user-shield',
+        'Leave': 'calendar-days',
+        'Attendance': 'clock',
+        'Payroll': 'dollar-sign',
+        'Performance': 'chart-line',
+        'Report': 'file-alt',
+        'System': 'cog',
+        'Manage': 'cogs',
+        'View': 'eye'
+    };
+    
+    return icons[category] || 'shield-alt';
+}
+
+// Toggle all permissions
+function toggleAllPermissions() {
+    const checkboxes = document.querySelectorAll('#permissionsContainer input[type="checkbox"]');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(cb => {
+        cb.checked = !allChecked;
+    });
+}
+
+// Handle role type change
+function handleRoleTypeChange() {
+    const roleType = document.querySelector('input[name="roleType"]:checked').value;
+    // Currently only custom roles are allowed
+    document.getElementById('isSystemRole').value = 'false';
 }
 
 // Close role modal
@@ -169,7 +330,7 @@ function viewRole(id) {
         document.getElementById('viewUserCount').textContent = role.userCount || 0;
         document.getElementById('viewStatus').textContent = role.isActive ? 'Active' : 'Inactive';
         
-        document.getElementById('viewRoleModal').style.display = 'block';
+        document.getElementById('viewRoleModal').style.display = 'flex';
     })
     .catch(error => {
         console.error('Error loading role:', error);
@@ -193,18 +354,36 @@ function editRole(id) {
     })
     .then(response => response.json())
     .then(role => {
-        document.getElementById('modalTitle').textContent = role.isSystemRole ? 'Edit System Role' : 'Edit Custom Role';
+        document.getElementById('modalTitle').innerHTML = role.isSystemRole 
+            ? '<i class="fas fa-user-shield"></i> View System Role' 
+            : '<i class="fas fa-user-shield"></i> Edit Custom Role';
         document.getElementById('roleId').value = role.id;
         document.getElementById('isSystemRole').value = role.isSystemRole.toString();
         document.getElementById('displayName').value = role.displayName || '';
         document.getElementById('displayName').disabled = role.isSystemRole; // Can't change system role name
         document.getElementById('description').value = role.description || '';
-        document.getElementById('permissions').value = role.permissions || '';
         document.getElementById('priority').value = role.priority || '';
         document.getElementById('isActive').value = role.isActive.toString();
         document.getElementById('statusGroup').style.display = 'block';
+        document.getElementById('roleTypeSection').style.display = 'none';
         
-        document.getElementById('roleModal').style.display = 'block';
+        // Load permissions checkboxes with selected permissions
+        const selectedPermissions = role.permissionList || [];
+        renderPermissionsCheckboxes(selectedPermissions);
+        
+        // Disable all inputs for system roles
+        if (role.isSystemRole) {
+            document.getElementById('description').disabled = true;
+            document.getElementById('priority').disabled = true;
+            document.getElementById('isActive').disabled = true;
+            
+            // Disable all permission checkboxes
+            document.querySelectorAll('#permissionsContainer input[type="checkbox"]').forEach(cb => {
+                cb.disabled = true;
+            });
+        }
+        
+        document.getElementById('roleModal').style.display = 'flex';
     })
     .catch(error => {
         console.error('Error loading role:', error);
@@ -219,10 +398,25 @@ function saveRole(event) {
     const id = document.getElementById('roleId').value;
     const isSystemRole = document.getElementById('isSystemRole').value === 'true';
     
+    // Prevent saving system roles
+    if (isSystemRole) {
+        alert('System roles cannot be modified');
+        return;
+    }
+    
+    // Get selected permissions from checkboxes
+    const selectedPermissions = Array.from(document.querySelectorAll('#permissionsContainer input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedPermissions.length === 0) {
+        alert('Please select at least one permission');
+        return;
+    }
+    
     const roleData = {
         displayName: document.getElementById('displayName').value,
         description: document.getElementById('description').value || null,
-        permissions: document.getElementById('permissions').value || null,
+        permissions: selectedPermissions.join(','),
         priority: document.getElementById('priority').value ? parseInt(document.getElementById('priority').value) : null
     };
     

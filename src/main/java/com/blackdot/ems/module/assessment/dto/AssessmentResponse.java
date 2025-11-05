@@ -12,6 +12,15 @@ public class AssessmentResponse {
     private Integer timeLimitMinutes;
     private Boolean isActive;
     private Integer questionCount;
+    private String quarter;
+    private Integer year;
+    private Integer maxAttempts;
+    private LocalDateTime deadline;
+    private Integer totalAttempts; // Calculated field
+    private Double passRate; // Calculated field
+    private Long employeesTaken; // Number of unique employees who took this assessment
+    private Long pendingAttempts; // Number of started but not completed attempts
+    private Long completedAttempts; // Number of completed attempts
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -53,6 +62,33 @@ public class AssessmentResponse {
     
     public Integer getQuestionCount() { return questionCount; }
     public void setQuestionCount(Integer questionCount) { this.questionCount = questionCount; }
+    
+    public String getQuarter() { return quarter; }
+    public void setQuarter(String quarter) { this.quarter = quarter; }
+    
+    public Integer getYear() { return year; }
+    public void setYear(Integer year) { this.year = year; }
+    
+    public Integer getMaxAttempts() { return maxAttempts; }
+    public void setMaxAttempts(Integer maxAttempts) { this.maxAttempts = maxAttempts; }
+    
+    public LocalDateTime getDeadline() { return deadline; }
+    public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
+    
+    public Integer getTotalAttempts() { return totalAttempts; }
+    public void setTotalAttempts(Integer totalAttempts) { this.totalAttempts = totalAttempts; }
+    
+    public Double getPassRate() { return passRate; }
+    public void setPassRate(Double passRate) { this.passRate = passRate; }
+    
+    public Long getEmployeesTaken() { return employeesTaken; }
+    public void setEmployeesTaken(Long employeesTaken) { this.employeesTaken = employeesTaken; }
+    
+    public Long getPendingAttempts() { return pendingAttempts; }
+    public void setPendingAttempts(Long pendingAttempts) { this.pendingAttempts = pendingAttempts; }
+    
+    public Long getCompletedAttempts() { return completedAttempts; }
+    public void setCompletedAttempts(Long completedAttempts) { this.completedAttempts = completedAttempts; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

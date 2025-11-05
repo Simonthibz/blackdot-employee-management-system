@@ -1,5 +1,6 @@
 package com.blackdot.ems.shared.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,11 +28,12 @@ public class Question {
     @Column(name = "points")
     private Integer points = 1;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assessment_id")
     private Assessment assessment;
     
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<QuestionOption> options = new HashSet<>();
     
     @CreationTimestamp

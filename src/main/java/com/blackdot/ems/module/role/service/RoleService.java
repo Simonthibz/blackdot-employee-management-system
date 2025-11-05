@@ -32,7 +32,7 @@ public class RoleService {
         }
         
         Role role = new Role();
-        role.setName(request.getName());
+        role.setName(request.getName()); // Can be null for custom roles
         role.setDisplayName(request.getDisplayName());
         role.setDescription(request.getDescription());
         role.setPermissions(request.getPermissions());
@@ -132,6 +132,81 @@ public class RoleService {
         return roleRepository.findByIsSystemRole(false).stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+    
+    public List<String> getAvailablePermissions() {
+        return Arrays.asList(
+            // Employee Permissions
+            "READ_EMPLOYEE",
+            "CREATE_EMPLOYEE",
+            "UPDATE_EMPLOYEE",
+            "DELETE_EMPLOYEE",
+            "MANAGE_EMPLOYEE_ROLES",
+            "MANAGE_EMPLOYEE_STATUS",
+            
+            // Department Permissions
+            "READ_DEPARTMENT",
+            "CREATE_DEPARTMENT",
+            "UPDATE_DEPARTMENT",
+            "DELETE_DEPARTMENT",
+            "MANAGE_DEPARTMENT_HEAD",
+            
+            // Task Permissions
+            "READ_TASK",
+            "CREATE_TASK",
+            "UPDATE_TASK",
+            "DELETE_TASK",
+            "ASSIGN_TASK",
+            "UPDATE_TASK_STATUS",
+            
+            // Role Permissions
+            "READ_ROLE",
+            "CREATE_ROLE",
+            "UPDATE_ROLE",
+            "DELETE_ROLE",
+            "ASSIGN_ROLE",
+            
+            // Leave Permissions
+            "READ_LEAVE",
+            "CREATE_LEAVE",
+            "UPDATE_LEAVE",
+            "DELETE_LEAVE",
+            "APPROVE_LEAVE",
+            "REJECT_LEAVE",
+            
+            // Attendance Permissions
+            "READ_ATTENDANCE",
+            "CREATE_ATTENDANCE",
+            "UPDATE_ATTENDANCE",
+            "DELETE_ATTENDANCE",
+            "MANAGE_ATTENDANCE",
+            
+            // Payroll Permissions
+            "READ_PAYROLL",
+            "CREATE_PAYROLL",
+            "UPDATE_PAYROLL",
+            "DELETE_PAYROLL",
+            "PROCESS_PAYROLL",
+            
+            // Performance Permissions
+            "READ_PERFORMANCE",
+            "CREATE_PERFORMANCE",
+            "UPDATE_PERFORMANCE",
+            "DELETE_PERFORMANCE",
+            "REVIEW_PERFORMANCE",
+            
+            // Report Permissions
+            "READ_REPORT",
+            "CREATE_REPORT",
+            "EXPORT_REPORT",
+            "VIEW_ANALYTICS",
+            
+            // System Permissions
+            "SYSTEM_ADMIN",
+            "MANAGE_SETTINGS",
+            "VIEW_AUDIT_LOG",
+            "MANAGE_USERS"
+        );
     }
     
     private RoleResponse convertToResponse(Role role) {

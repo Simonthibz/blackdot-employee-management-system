@@ -35,6 +35,18 @@ public class Assessment {
     @Column(name = "time_limit_minutes")
     private Integer timeLimitMinutes = 60;
     
+    @Column(length = 10)
+    private String quarter; // Q1, Q2, Q3, Q4
+    
+    @Column
+    private Integer year;
+    
+    @Column(name = "max_attempts")
+    private Integer maxAttempts = 3;
+    
+    @Column
+    private LocalDateTime deadline;
+    
     @OneToMany(mappedBy = "assessment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Question> questions = new HashSet<>();
     
@@ -75,6 +87,18 @@ public class Assessment {
     
     public Integer getTimeLimitMinutes() { return timeLimitMinutes; }
     public void setTimeLimitMinutes(Integer timeLimitMinutes) { this.timeLimitMinutes = timeLimitMinutes; }
+    
+    public String getQuarter() { return quarter; }
+    public void setQuarter(String quarter) { this.quarter = quarter; }
+    
+    public Integer getYear() { return year; }
+    public void setYear(Integer year) { this.year = year; }
+    
+    public Integer getMaxAttempts() { return maxAttempts; }
+    public void setMaxAttempts(Integer maxAttempts) { this.maxAttempts = maxAttempts; }
+    
+    public LocalDateTime getDeadline() { return deadline; }
+    public void setDeadline(LocalDateTime deadline) { this.deadline = deadline; }
     
     public Set<Question> getQuestions() { return questions; }
     public void setQuestions(Set<Question> questions) { this.questions = questions; }

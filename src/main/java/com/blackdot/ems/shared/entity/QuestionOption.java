@@ -1,5 +1,6 @@
 package com.blackdot.ems.shared.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -18,6 +19,7 @@ public class QuestionOption {
     @Column(name = "is_correct")
     private Boolean isCorrect = false;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "question_id")
     private Question question;

@@ -74,6 +74,12 @@ public class DashboardController {
         return "dashboard/assessment/assessments";
     }
 
+    @GetMapping("/assessments/take")
+    public String takeAssessmentPage(@AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
+        model.addAttribute("user", userDetails);
+        return "dashboard/assessment/take-assessment";
+    }
+
     @GetMapping("/reports")
     public String reportsPage(@AuthenticationPrincipal UserDetailsImpl userDetails, Model model) {
         boolean canViewReports = userDetails.getAuthorities().stream()

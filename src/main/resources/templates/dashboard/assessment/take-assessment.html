@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Assessment - Employee Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/dashboard/assessment/take-assessment.css}">
+</head>
+<body>
+    <!-- Header with timer -->
+    <header class="assessment-header">
+        <div class="header-left">
+            <h1 id="assessmentTitle">Loading Assessment...</h1>
+            <p class="assessment-meta">
+                <span id="questionCount">0</span> questions | 
+                Passing Score: <span id="passingScore">0</span>%
+            </p>
+        </div>
+        <div class="header-right">
+            <div class="timer-container">
+                <i class="fas fa-clock"></i>
+                <span id="timer">00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="assessment-container">
+        <!-- Progress bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-text">
+                Question <span id="currentQuestion">1</span> of <span id="totalQuestions">0</span>
+            </div>
+        </div>
+
+        <!-- Question card -->
+        <div class="question-card" id="questionCard">
+            <div class="question-number">Question <span id="questionNumber">1</span></div>
+            <div class="question-text" id="questionText">Loading question...</div>
+            <div class="question-points">
+                <i class="fas fa-star"></i>
+                <span id="questionPoints">1</span> point(s)
+            </div>
+            
+            <!-- Answer options container -->
+            <div class="options-container" id="optionsContainer">
+                <!-- Options will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Navigation buttons -->
+        <div class="navigation-buttons">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <div class="question-navigator">
+                <span id="questionIndicators"></span>
+            </div>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+            <button class="btn btn-success" id="submitBtn" onclick="showSubmitConfirmation()" style="display: none;">
+                <i class="fas fa-check"></i> Submit Assessment
+            </button>
+        </div>
+    </main>
+
+    <!-- Submit confirmation modal -->
+    <div id="submitModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSubmitModal()">&times;</button>
+            <div class="modal-header">
+                <i class="fas fa-question-circle"></i>
+                <h2>Submit Assessment?</h2>
+            </div>
+            <div class="modal-body">
+                <p>You have answered <span id="answeredCount">0</span> out of <span id="totalQuestionsModal">0</span> questions.</p>
+                <div id="unansweredWarning" class="warning-message" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    You have <span id="unansweredCount">0</span> unanswered question(s).
+                </div>
+                <p><strong>Are you sure you want to submit?</strong></p>
+                <p class="note">Once submitted, you cannot change your answers.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSubmitModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-success" onclick="submitAssessment()">
+                    <i class="fas fa-check"></i> Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results modal -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-trophy"></i>
+                <h2>Assessment Results</h2>
+            </div>
+            <div class="modal-body">
+                <div class="result-card">
+                    <div class="score-display">
+                        <div class="score-circle" id="scoreCircle">
+                            <span id="finalScore">0</span>%
+                        </div>
+                        <div id="passStatus" class="pass-status">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Passed</span>
+                        </div>
+                    </div>
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Correct Answers:</span>
+                            <span class="detail-value" id="correctAnswers">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Questions:</span>
+                            <span class="detail-value" id="totalQuestionsResult">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Time Taken:</span>
+                            <span class="detail-value" id="timeTaken">0</span> minutes
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Passing Score:</span>
+                            <span class="detail-value" id="passingScoreResult">0</span>%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="returnToAssessments()">
+                    <i class="fas fa-arrow-left"></i> Back to Assessments
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading assessment...</p>
+    </div>
+
+    <script th:src="@{/js/dashboard/assessment/take-assessment.js}"></script>
+</body>
+</html>

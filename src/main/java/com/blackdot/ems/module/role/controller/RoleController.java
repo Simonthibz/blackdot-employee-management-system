@@ -102,4 +102,12 @@ public class RoleController {
         List<RoleResponse> roles = roleService.getCustomRoles();
         return ResponseEntity.ok(roles);
     }
+    
+    // Get available permissions - All authenticated users can view
+    @GetMapping("/permissions")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<String>> getAvailablePermissions() {
+        List<String> permissions = roleService.getAvailablePermissions();
+        return ResponseEntity.ok(permissions);
+    }
 }

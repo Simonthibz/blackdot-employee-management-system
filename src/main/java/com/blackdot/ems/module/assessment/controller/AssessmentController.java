@@ -75,24 +75,29 @@ public class AssessmentController {
     
     // Get assessment questions (for taking assessment)
     @GetMapping("/{id}/questions")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('HR') or hasRole('DATA_CAPTURER')")
     public ResponseEntity<List<Question>> getAssessmentQuestions(@PathVariable Long id) {
         List<Question> questions = assessmentService.getAssessmentQuestions(id);
         return ResponseEntity.ok(questions);
     }
     
-    // Start assessment (DATA_CAPTURER only)
+    // Delete question (HR and ADMIN only)
+    @DeleteMapping("/questions/{questionId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
+    public ResponseEntity<Void> deleteQuestion(@PathVariable Long questionId) {
+        assessmentService.deleteQuestion(questionId);
+        return ResponseEntity.noContent().build();
+    }
+    
+    // Start assessment (All authenticated users)
     @PostMapping("/{id}/start")
-    @PreAuthorize("hasRole('DATA_CAPTURER')")
     public ResponseEntity<AssessmentResultResponse> startAssessment(@PathVariable Long id, 
                                                                    @AuthenticationPrincipal UserDetailsImpl userPrincipal) {
         AssessmentResultResponse result = assessmentService.startAssessment(id, userPrincipal.getId());
         return ResponseEntity.ok(result);
     }
     
-    // Submit assessment (DATA_CAPTURER only)
+    // Submit assessment (All authenticated users)
     @PostMapping("/{id}/submit")
-    @PreAuthorize("hasRole('DATA_CAPTURER')")
     public ResponseEntity<AssessmentResultResponse> submitAssessment(@PathVariable Long id, 
                                                                     @AuthenticationPrincipal UserDetailsImpl userPrincipal,
                                                                     @Valid @RequestBody TakeAssessmentRequest request) {
@@ -102,7 +107,6 @@ public class AssessmentController {
     
     // Get user's assessment results
     @GetMapping("/my-results")
-    @PreAuthorize("hasRole('DATA_CAPTURER')")
     public ResponseEntity<List<AssessmentResultResponse>> getMyAssessmentResults(@AuthenticationPrincipal UserDetailsImpl userPrincipal) {
         List<AssessmentResultResponse> results = assessmentService.getUserAssessmentResults(userPrincipal.getId());
         return ResponseEntity.ok(results);
@@ -132,5 +136,13 @@ public class AssessmentController {
     public ResponseEntity<List<AssessmentResultResponse>> getUserAssessmentResults(@PathVariable Long userId) {
         List<AssessmentResultResponse> results = assessmentService.getUserAssessmentResults(userId);
         return ResponseEntity.ok(results);
+    }
+    
+    // Get total employee count (HR and ADMIN only)
+    @GetMapping("/stats/employee-count")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
+    public ResponseEntity<Long> getTotalEmployeeCount() {
+        Long count = assessmentService.getTotalEmployeeCount();
+        return ResponseEntity.ok(count);
     }
 }
