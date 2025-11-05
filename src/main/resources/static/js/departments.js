@@ -60,27 +60,53 @@ function loadAllDepartments() {
 
 // Load employees for department head dropdown
 function loadEmployeesForDepartmentHead() {
-    fetch('/api/employees', {
+    fetch('/api/employees/list', {
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + getToken(),
             'Content-Type': 'application/json'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        allEmployees = data;
-        const select = document.getElementById('headOfDepartmentId');
-        select.innerHTML = '<option value="">Select Head of Department</option>';
-        
-        data.forEach(employee => {
-            const option = document.createElement('option');
-            option.value = employee.id;
-            option.textContent = `${employee.firstName} ${employee.lastName} (${employee.employeeId || 'N/A'})`;
-            select.appendChild(option);
-        });
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to load employees');
+        }
+        return response.json();
     })
-    .catch(error => console.error('Error loading employees:', error));
+    .then(data => {
+        console.log('Loaded employees:', data); // Debug log
+        allEmployees = data;
+        populateDepartmentHeadDropdown(data);
+    })
+    .catch(error => {
+        console.error('Error loading employees:', error);
+        alert('Failed to load employees. Please check console for details.');
+    });
+}
+
+// Populate department head dropdown
+function populateDepartmentHeadDropdown(employees) {
+    const select = document.getElementById('headOfDepartmentId');
+    if (!select) {
+        console.error('Head of Department dropdown not found');
+        return;
+    }
+    
+    select.innerHTML = '<option value="">Select Head of Department</option>';
+    
+    if (!employees || employees.length === 0) {
+        console.warn('No employees available');
+        return;
+    }
+    
+    employees.forEach(employee => {
+        const option = document.createElement('option');
+        option.value = employee.id;
+        option.textContent = `${employee.firstName} ${employee.lastName} (${employee.employeeId || 'N/A'})`;
+        select.appendChild(option);
+    });
+    
+    console.log('Populated dropdown with', employees.length, 'employees');
 }
 
 // Display departments in table
@@ -104,19 +130,46 @@ function displayDepartments(departments) {
                     ${dept.isActive ? 'Active' : 'Inactive'}
                 </span>
             </td>
-            <td>
-                <button onclick="viewDepartment(${dept.id})" class="btn btn-sm btn-info" title="View">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editDepartment(${dept.id})" class="btn btn-sm btn-warning" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteDepartment(${dept.id})" class="btn btn-sm btn-danger" title="Delete">
-                    <i class="fas fa-trash"></i>
-                </button>
+            <td class="text-center">
+                <div class="action-menu">
+                    <button class="action-btn" onclick="toggleActionMenu(event, ${dept.id})" title="Actions">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="action-dropdown" id="actionMenu-${dept.id}">
+                        <button class="action-item" onclick="viewDepartment(${dept.id})">
+                            <i class="fas fa-eye"></i>
+                            <span>View Details</span>
+                        </button>
+                        <button class="action-item" onclick="editDepartment(${dept.id})">
+                            <i class="fas fa-edit"></i>
+                            <span>Edit</span>
+                        </button>
+                        <button class="action-item danger" onclick="deleteDepartment(${dept.id})">
+                            <i class="fas fa-trash"></i>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                </div>
             </td>
         </tr>
     `).join('');
+}
+
+// Toggle action menu
+function toggleActionMenu(event, deptId) {
+    event.stopPropagation();
+    const menu = document.getElementById(`actionMenu-${deptId}`);
+    const allMenus = document.querySelectorAll('.action-dropdown');
+    
+    // Close all other menus
+    allMenus.forEach(m => {
+        if (m !== menu) {
+            m.classList.remove('show');
+        }
+    });
+    
+    // Toggle current menu
+    menu.classList.toggle('show');
 }
 
 // Filter departments
@@ -146,11 +199,20 @@ function filterDepartments() {
 
 // Show create department modal
 function showCreateDepartmentModal() {
-    document.getElementById('modalTitle').textContent = 'Create Department';
+    document.getElementById('modalTitle').innerHTML = '<i class="fas fa-sitemap"></i> Create Department';
     document.getElementById('departmentForm').reset();
     document.getElementById('departmentId').value = '';
     document.getElementById('statusGroup').style.display = 'none';
-    document.getElementById('departmentModal').style.display = 'block';
+    document.getElementById('statusHeader').style.display = 'none';
+    
+    // Reload employees to ensure dropdown is populated
+    if (allEmployees.length > 0) {
+        populateDepartmentHeadDropdown(allEmployees);
+    } else {
+        loadEmployeesForDepartmentHead();
+    }
+    
+    document.getElementById('departmentModal').style.display = 'flex';
 }
 
 // Close department modal
@@ -177,10 +239,13 @@ function viewDepartment(id) {
         document.getElementById('viewCostCenterCode').textContent = dept.costCenterCode || '-';
         document.getElementById('viewBudget').textContent = dept.budget ? `$${dept.budget.toFixed(2)}` : '-';
         document.getElementById('viewEmployeeCount').textContent = dept.employeeCount || 0;
-        document.getElementById('viewStatus').textContent = dept.isActive ? 'Active' : 'Inactive';
+        
+        const statusElement = document.getElementById('viewStatus');
+        statusElement.innerHTML = `<span class="badge ${dept.isActive ? 'badge-success' : 'badge-danger'}">${dept.isActive ? 'Active' : 'Inactive'}</span>`;
+        
         document.getElementById('viewCreatedAt').textContent = new Date(dept.createdAt).toLocaleString();
         
-        document.getElementById('viewDepartmentModal').style.display = 'block';
+        document.getElementById('viewDepartmentModal').style.display = 'flex';
     })
     .catch(error => {
         console.error('Error loading department:', error);
@@ -193,6 +258,14 @@ function closeViewDepartmentModal() {
     document.getElementById('viewDepartmentModal').style.display = 'none';
 }
 
+// Close action menus when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.action-menu')) {
+        const allMenus = document.querySelectorAll('.action-dropdown');
+        allMenus.forEach(menu => menu.classList.remove('show'));
+    }
+});
+
 // Edit department
 function editDepartment(id) {
     fetch(`/api/departments/${id}`, {
@@ -204,19 +277,30 @@ function editDepartment(id) {
     })
     .then(response => response.json())
     .then(dept => {
-        document.getElementById('modalTitle').textContent = 'Edit Department';
+        document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit Department';
         document.getElementById('departmentId').value = dept.id;
         document.getElementById('name').value = dept.name;
         document.getElementById('code').value = dept.code || '';
         document.getElementById('description').value = dept.description || '';
-        document.getElementById('headOfDepartmentId').value = dept.headOfDepartmentId || '';
         document.getElementById('location').value = dept.location || '';
         document.getElementById('costCenterCode').value = dept.costCenterCode || '';
         document.getElementById('budget').value = dept.budget || '';
         document.getElementById('isActive').value = dept.isActive.toString();
         document.getElementById('statusGroup').style.display = 'block';
+        document.getElementById('statusHeader').style.display = 'flex';
         
-        document.getElementById('departmentModal').style.display = 'block';
+        // Reload employees and set the selected value
+        if (allEmployees.length > 0) {
+            populateDepartmentHeadDropdown(allEmployees);
+            document.getElementById('headOfDepartmentId').value = dept.headOfDepartmentId || '';
+        } else {
+            loadEmployeesForDepartmentHead();
+            setTimeout(() => {
+                document.getElementById('headOfDepartmentId').value = dept.headOfDepartmentId || '';
+            }, 500);
+        }
+        
+        document.getElementById('departmentModal').style.display = 'flex';
     })
     .catch(error => {
         console.error('Error loading department:', error);
@@ -309,3 +393,13 @@ window.onclick = function(event) {
         closeViewDepartmentModal();
     }
 }
+
+// Load all departments when status filter changes to show all
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const statusValue = this.value;
+    if (statusValue === '') {
+        loadAllDepartments();
+    } else {
+        loadActiveDepartments();
+    }
+});

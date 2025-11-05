@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Department Management - Blackdot EMS</title>
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/departments.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -16,30 +17,40 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="mb-3">
-            <h2><i class="fas fa-sitemap"></i> Department Management</h2>
-            <p>Manage organizational departments</p>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="mb-3" th:if="${canManageDepartments}">
-            <button onclick="showCreateDepartmentModal()" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Department
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <div class="page-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div>
+                    <h2 class="page-title">Department Management</h2>
+                    <p class="page-subtitle">Manage organizational departments</p>
+                </div>
+            </div>
+            <button onclick="showCreateDepartmentModal()" class="btn btn-primary" th:if="${canManageDepartments}">
+                <i class="fas fa-plus"></i> Add Department
             </button>
         </div>
 
-        <!-- Search and Filter Section -->
-        <div class="table-container mb-3">
-            <div class="p-3">
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
-                    <div>
-                        <label>Search Departments:</label>
-                        <input type="text" id="searchInput" class="form-control" 
+        <!-- Filters Card -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-search"></i> Search
+                        </label>
+                        <input type="text" 
+                               id="searchInput" 
                                placeholder="Search by name, code..." 
+                               class="form-control"
                                onkeyup="filterDepartments()">
                     </div>
-                    <div>
-                        <label>Status Filter:</label>
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-circle-info"></i> Status
+                        </label>
                         <select id="statusFilter" class="form-control" onchange="filterDepartments()">
                             <option value="">All Departments</option>
                             <option value="true" selected>Active Only</option>
@@ -50,146 +61,219 @@
             </div>
         </div>
 
-        <!-- Departments Table -->
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Code</th>
-                        <th>Head of Department</th>
-                        <th>Employees</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="departmentsTableBody">
-                    <tr>
-                        <td colspan="7" class="text-center">Loading departments...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Departments Table Card -->
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table" id="departmentsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Head of Department</th>
+                            <th>Employees</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="departmentsTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center">Loading departments...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+    </main>
 
-        <!-- Create/Edit Department Modal -->
-        <div id="departmentModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modalTitle">Create Department</h3>
-                    <button class="close" onclick="closeDepartmentModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <form id="departmentForm" onsubmit="saveDepartment(event)">
-                        <input type="hidden" id="departmentId">
-                        
-                        <div class="form-group">
-                            <label for="name">Department Name <span class="text-danger">*</span></label>
-                            <input type="text" id="name" class="form-control" required>
+    <!-- Create/Edit Department Modal -->
+    <div id="departmentModal" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="modalTitle"><i class="fas fa-sitemap"></i> Create Department</h3>
+                <button class="modal-close" onclick="closeDepartmentModal()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="departmentForm" onsubmit="saveDepartment(event)">
+                    <input type="hidden" id="departmentId">
+                    
+                    <!-- Basic Information -->
+                    <div class="form-section-header">
+                        <i class="fas fa-info-circle"></i> Basic Information
+                    </div>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Department Name <span class="text-danger">*</span></label>
+                                <input type="text" id="name" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="code" class="form-label">Department Code</label>
+                                <input type="text" id="code" class="form-control" maxlength="20">
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="code">Department Code</label>
-                            <input type="text" id="code" class="form-control" maxlength="20">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="description">Description</label>
+                            <label for="description" class="form-label">Description</label>
                             <textarea id="description" class="form-control" rows="3"></textarea>
                         </div>
+                    </div>
 
+                    <!-- Organizational Structure -->
+                    <div class="form-section-header">
+                        <i class="fas fa-users"></i> Organizational Structure
+                    </div>
+                    <div class="form-section">
                         <div class="form-group">
-                            <label for="headOfDepartmentId">Head of Department</label>
+                            <label for="headOfDepartmentId" class="form-label">Head of Department</label>
                             <select id="headOfDepartmentId" class="form-control">
                                 <option value="">Select Head of Department</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="location">Location</label>
+                            <label for="location" class="form-label">Location</label>
                             <input type="text" id="location" class="form-control">
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="costCenterCode">Cost Center Code</label>
-                            <input type="text" id="costCenterCode" class="form-control">
+                    <!-- Financial Information -->
+                    <div class="form-section-header">
+                        <i class="fas fa-dollar-sign"></i> Financial Information
+                    </div>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="costCenterCode" class="form-label">Cost Center Code</label>
+                                <input type="text" id="costCenterCode" class="form-control">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="budget" class="form-label">Budget</label>
+                                <input type="number" id="budget" class="form-control" step="0.01">
+                            </div>
                         </div>
+                    </div>
 
+                    <!-- Status -->
+                    <div class="form-section-header" id="statusHeader" style="display: none;">
+                        <i class="fas fa-toggle-on"></i> Status
+                    </div>
+                    <div class="form-section" id="statusGroup" style="display: none;">
                         <div class="form-group">
-                            <label for="budget">Budget</label>
-                            <input type="number" id="budget" class="form-control" step="0.01">
-                        </div>
-
-                        <div class="form-group" id="statusGroup" style="display: none;">
-                            <label for="isActive">Status</label>
+                            <label for="isActive" class="form-label">Department Status</label>
                             <select id="isActive" class="form-control">
                                 <option value="true">Active</option>
                                 <option value="false">Inactive</option>
                             </select>
                         </div>
-
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Save Department
-                            </button>
-                            <button type="button" class="btn ml-2" onclick="closeDepartmentModal()">
-                                <i class="fas fa-times"></i> Cancel
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeDepartmentModal()" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="submit" form="departmentForm" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Department
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- View Department Modal -->
-        <div id="viewDepartmentModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Department Details</h3>
-                    <button class="close" onclick="closeViewDepartmentModal()">&times;</button>
+    <!-- View Department Modal -->
+    <div id="viewDepartmentModal" class="modal" style="display: none;">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fas fa-eye"></i> Department Details</h3>
+                <button class="modal-close" onclick="closeViewDepartmentModal()" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Basic Information -->
+                <div class="form-section-header">
+                    <i class="fas fa-info-circle"></i> Basic Information
                 </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name:</label>
-                        <p id="viewName"></p>
+                <div class="form-section">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Name:</label>
+                            <p id="viewName" class="view-value"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Code:</label>
+                            <p id="viewCode" class="view-value"></p>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Code:</label>
-                        <p id="viewCode"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Description:</label>
-                        <p id="viewDescription"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Head of Department:</label>
-                        <p id="viewHeadOfDepartment"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Location:</label>
-                        <p id="viewLocation"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Cost Center Code:</label>
-                        <p id="viewCostCenterCode"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Budget:</label>
-                        <p id="viewBudget"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Employee Count:</label>
-                        <p id="viewEmployeeCount"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Status:</label>
-                        <p id="viewStatus"></p>
-                    </div>
-                    <div class="form-group">
-                        <label>Created At:</label>
-                        <p id="viewCreatedAt"></p>
+                        <label class="form-label">Description:</label>
+                        <p id="viewDescription" class="view-value"></p>
                     </div>
                 </div>
+
+                <!-- Organizational Structure -->
+                <div class="form-section-header">
+                    <i class="fas fa-users"></i> Organizational Structure
+                </div>
+                <div class="form-section">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Head of Department:</label>
+                            <p id="viewHeadOfDepartment" class="view-value"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Employee Count:</label>
+                            <p id="viewEmployeeCount" class="view-value"></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location:</label>
+                        <p id="viewLocation" class="view-value"></p>
+                    </div>
+                </div>
+
+                <!-- Financial Information -->
+                <div class="form-section-header">
+                    <i class="fas fa-dollar-sign"></i> Financial Information
+                </div>
+                <div class="form-section">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Cost Center Code:</label>
+                            <p id="viewCostCenterCode" class="view-value"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Budget:</label>
+                            <p id="viewBudget" class="view-value"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Metadata -->
+                <div class="form-section-header">
+                    <i class="fas fa-clock"></i> Status & Information
+                </div>
+                <div class="form-section">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Status:</label>
+                            <p id="viewStatus" class="view-value"></p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Created At:</label>
+                            <p id="viewCreatedAt" class="view-value"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeViewDepartmentModal()" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Close
+                </button>
             </div>
         </div>
     </div>
@@ -198,187 +282,6 @@
     <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
     
     <!-- Page Specific Scripts -->
-    <script th:src="@{/js/departments.js}"></script>
-</body>
-</html>
-        <div class="mb-3">
-            <h2><i class="fas fa-sitemap"></i> Department Management</h2>
-            <p>Manage organizational departments</p>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="mb-3" th:if="${canManageDepartments}">
-            <button onclick="showCreateDepartmentModal()" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Department
-            </button>
-        </div>
-
-        <!-- Search and Filter Section -->
-        <div class="table-container mb-3">
-            <div class="p-3">
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
-                    <div>
-                        <label>Search Departments:</label>
-                        <input type="text" id="searchInput" class="form-control" 
-                               placeholder="Search by name, code..." 
-                               onkeyup="filterDepartments()">
-                    </div>
-                    <div>
-                        <label>Status Filter:</label>
-                        <select id="statusFilter" class="form-control" onchange="filterDepartments()">
-                            <option value="">All Departments</option>
-                            <option value="true" selected>Active Only</option>
-                            <option value="false">Inactive Only</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Departments Table -->
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Code</th>
-                        <th>Head of Department</th>
-                        <th>Employees</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="departmentsTableBody">
-                    <tr>
-                        <td colspan="7" class="text-center">Loading departments...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
-
-    <!-- Create/Edit Department Modal -->
-    <div id="departmentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Create Department</h3>
-                <button class="close" onclick="closeDepartmentModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="departmentForm" onsubmit="saveDepartment(event)">
-                    <input type="hidden" id="departmentId">
-                    
-                    <div class="form-group">
-                        <label for="name">Department Name <span class="text-danger">*</span></label>
-                        <input type="text" id="name" class="form-control" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="code">Department Code</label>
-                        <input type="text" id="code" class="form-control" maxlength="20">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description">Description</label>
-                        <textarea id="description" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="headOfDepartmentId">Head of Department</label>
-                        <select id="headOfDepartmentId" class="form-control">
-                            <option value="">Select Head of Department</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="costCenterCode">Cost Center Code</label>
-                        <input type="text" id="costCenterCode" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="budget">Budget</label>
-                        <input type="number" id="budget" class="form-control" step="0.01">
-                    </div>
-
-                    <div class="form-group" id="statusGroup" style="display: none;">
-                        <label for="isActive">Status</label>
-                        <select id="isActive" class="form-control">
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
-                        </select>
-                    </div>
-
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Department
-                        </button>
-                        <button type="button" class="btn ml-2" onclick="closeDepartmentModal()">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- View Department Modal -->
-    <div id="viewDepartmentModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Department Details</h3>
-                <button class="close" onclick="closeViewDepartmentModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Name:</label>
-                    <p id="viewName"></p>
-                </div>
-                <div class="form-group">
-                    <label>Code:</label>
-                    <p id="viewCode"></p>
-                </div>
-                <div class="form-group">
-                    <label>Description:</label>
-                    <p id="viewDescription"></p>
-                </div>
-                <div class="form-group">
-                    <label>Head of Department:</label>
-                    <p id="viewHeadOfDepartment"></p>
-                </div>
-                <div class="form-group">
-                    <label>Location:</label>
-                    <p id="viewLocation"></p>
-                </div>
-                <div class="form-group">
-                    <label>Cost Center Code:</label>
-                    <p id="viewCostCenterCode"></p>
-                </div>
-                <div class="form-group">
-                    <label>Budget:</label>
-                    <p id="viewBudget"></p>
-                </div>
-                <div class="form-group">
-                    <label>Employee Count:</label>
-                    <p id="viewEmployeeCount"></p>
-                </div>
-                <div class="form-group">
-                    <label>Status:</label>
-                    <p id="viewStatus"></p>
-                </div>
-                <div class="form-group">
-                    <label>Created At:</label>
-                    <p id="viewCreatedAt"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script th:src="@{/js/departments.js}"></script>
 </body>
 </html>
