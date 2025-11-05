@@ -22,6 +22,7 @@ public class TaskResponse {
     private Long assignedToId;
     private String assignedToName;
     private String assignedToEmail;
+    private String assignedToDepartment;
     
     // Assigned by user info
     private Long assignedById;
@@ -75,6 +76,9 @@ public class TaskResponse {
     
     public String getAssignedToEmail() { return assignedToEmail; }
     public void setAssignedToEmail(String assignedToEmail) { this.assignedToEmail = assignedToEmail; }
+    
+    public String getAssignedToDepartment() { return assignedToDepartment; }
+    public void setAssignedToDepartment(String assignedToDepartment) { this.assignedToDepartment = assignedToDepartment; }
     
     public Long getAssignedById() { return assignedById; }
     public void setAssignedById(Long assignedById) { this.assignedById = assignedById; }

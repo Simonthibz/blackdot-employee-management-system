@@ -9,6 +9,8 @@ import com.blackdot.ems.shared.entity.ClearanceLevel;
 import com.blackdot.ems.module.employee.dto.*;
 import com.blackdot.ems.module.employee.repository.UserRepository;
 import com.blackdot.ems.module.authentication.repository.RoleRepository;
+import com.blackdot.ems.module.department.repository.DepartmentRepository;
+import com.blackdot.ems.shared.entity.Department;
 import com.blackdot.ems.shared.exception.ResourceNotFoundException;
 import com.blackdot.ems.shared.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,9 @@ public class EmployeeService {
     
     @Autowired
     private RoleRepository roleRepository;
+    
+    @Autowired
+    private DepartmentRepository departmentRepository;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -116,7 +121,14 @@ public class EmployeeService {
         
         // Basic employee information
         user.setEmployeeId(request.getEmployeeId());
-        user.setDepartment(request.getDepartment());
+        
+        // Set department entity relationship
+        if (request.getDepartment() != null && !request.getDepartment().isEmpty()) {
+            Department department = departmentRepository.findByName(request.getDepartment())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + request.getDepartment()));
+            user.setDepartmentEntity(department);
+        }
+        
         user.setPosition(request.getPosition());
         user.setHireDate(request.getHireDate() != null ? request.getHireDate() : LocalDate.now());
         
@@ -200,7 +212,14 @@ public class EmployeeService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmployeeId(request.getEmployeeId());
-        user.setDepartment(request.getDepartment());
+        
+        // Update department entity relationship
+        if (request.getDepartment() != null && !request.getDepartment().isEmpty()) {
+            Department department = departmentRepository.findByName(request.getDepartment())
+                    .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + request.getDepartment()));
+            user.setDepartmentEntity(department);
+        }
+        
         user.setPosition(request.getPosition());
         user.setHireDate(request.getHireDate());
         
@@ -356,7 +375,12 @@ public class EmployeeService {
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setEmployeeId(user.getEmployeeId());
-        response.setDepartment(user.getDepartment());
+        
+        // Set department from entity relationship
+        if (user.getDepartmentEntity() != null) {
+            response.setDepartment(user.getDepartmentEntity().getName());
+        }
+        
         response.setPosition(user.getPosition());
         response.setHireDate(user.getHireDate());
         

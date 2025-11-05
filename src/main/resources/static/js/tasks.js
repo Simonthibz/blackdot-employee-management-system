@@ -2,6 +2,20 @@
 let allTasks = [];
 let currentView = 'all';
 
+// Load departments for filter dropdown
+function loadDepartments() {
+    fetch('/api/departments/active', {
+        headers: getHeaders()
+    })
+    .then(response => response.json())
+    .then(departments => {
+        const departmentFilter = document.getElementById('departmentFilter');
+        departmentFilter.innerHTML = '<option value="">All Departments</option>' +
+            departments.map(dept => `<option value="${dept.name}">${dept.name}</option>`).join('');
+    })
+    .catch(error => console.error('Error loading departments:', error));
+}
+
 // Load tasks on page load
 document.addEventListener('DOMContentLoaded', function() {
     if (canAssignTasks) {
@@ -85,15 +99,17 @@ function displayTasks(tasks) {
     const tbody = document.getElementById('tasksTableBody');
     
     if (tasks.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No tasks found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No tasks found</td></tr>';
         return;
     }
     
     tbody.innerHTML = tasks.map(task => `
         <tr class="${task.overdue ? 'table-danger' : ''}">
             <td>
-                <strong>${escapeHtml(task.title)}</strong>
-                ${task.overdue ? '<span class="badge badge-danger ml-2">OVERDUE</span>' : ''}
+                <div class="task-title">
+                    <span class="task-title-text">${escapeHtml(task.title)}</span>
+                    ${task.overdue ? '<span class="badge badge-danger">OVERDUE</span>' : ''}
+                </div>
             </td>
             <td>
                 <span class="badge badge-${getPriorityBadgeClass(task.priority)}">
@@ -106,32 +122,66 @@ function displayTasks(tasks) {
                 </span>
             </td>
             <td>${task.assignedToName || 'Unassigned'}</td>
+            <td>${task.assignedToDepartment || '-'}</td>
             <td>${task.dueDate ? formatDate(task.dueDate) : 'No due date'}</td>
-            <td>
-                <button onclick="viewTask(${task.id})" class="btn btn-sm" title="View Details">
-                    <i class="fas fa-eye"></i>
-                </button>
-                ${canAssignTasks ? `
-                    <button onclick="editTask(${task.id})" class="btn btn-sm" title="Edit">
-                        <i class="fas fa-edit"></i>
+            <td class="text-center">
+                <div class="action-menu">
+                    <button class="action-btn" onclick="toggleActionMenu(event, ${task.id})" title="Actions">
+                        <i class="fas fa-ellipsis-v"></i>
                     </button>
-                    <button onclick="deleteTask(${task.id})" class="btn btn-sm btn-danger" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : `
-                    <button onclick="updateTaskStatus(${task.id}, '${task.status}')" class="btn btn-sm" title="Update Status">
-                        <i class="fas fa-sync"></i>
-                    </button>
-                `}
+                    <div class="action-dropdown" id="actionMenu-${task.id}">
+                        <button class="action-item" onclick="viewTask(${task.id})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        ${canAssignTasks ? `
+                            <button class="action-item" onclick="editTask(${task.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="action-item danger" onclick="deleteTask(${task.id})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        ` : `
+                            <button class="action-item" onclick="updateTaskStatus(${task.id}, '${task.status}')">
+                                <i class="fas fa-sync"></i> Update Status
+                            </button>
+                        `}
+                    </div>
+                </div>
             </td>
         </tr>
     `).join('');
 }
 
+// Toggle action menu
+function toggleActionMenu(event, taskId) {
+    event.stopPropagation();
+    
+    // Close all other menus
+    document.querySelectorAll('.action-dropdown').forEach(menu => {
+        if (menu.id !== `actionMenu-${taskId}`) {
+            menu.classList.remove('show');
+        }
+    });
+    
+    // Toggle this menu
+    const menu = document.getElementById(`actionMenu-${taskId}`);
+    menu.classList.toggle('show');
+}
+
+// Close action menus when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.action-menu')) {
+        document.querySelectorAll('.action-dropdown').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
+
 // Filter tasks
 function filterTasks() {
     const statusFilter = document.getElementById('statusFilter').value;
     const priorityFilter = document.getElementById('priorityFilter').value;
+    const departmentFilter = document.getElementById('departmentFilter').value;
     const searchTerm = document.getElementById('searchTasks').value.toLowerCase();
     
     let filtered = allTasks;
@@ -142,6 +192,10 @@ function filterTasks() {
     
     if (priorityFilter) {
         filtered = filtered.filter(task => task.priority === priorityFilter);
+    }
+    
+    if (departmentFilter) {
+        filtered = filtered.filter(task => task.assignedToDepartment === departmentFilter);
     }
     
     if (searchTerm) {
@@ -160,7 +214,7 @@ function showCreateTaskModal() {
     document.getElementById('taskForm').reset();
     document.getElementById('taskId').value = '';
     document.getElementById('taskStatus').disabled = true;
-    document.getElementById('taskModal').style.display = 'block';
+    document.getElementById('taskModal').style.display = 'flex';
 }
 
 // Edit task
@@ -180,7 +234,7 @@ function editTask(taskId) {
         document.getElementById('taskAssignedTo').value = task.assignedToId || '';
         document.getElementById('taskDueDate').value = task.dueDate ? task.dueDate.substring(0, 16) : '';
         document.getElementById('taskNotes').value = task.notes || '';
-        document.getElementById('taskModal').style.display = 'block';
+        document.getElementById('taskModal').style.display = 'flex';
     })
     .catch(error => {
         console.error('Error loading task:', error);
@@ -196,61 +250,72 @@ function viewTask(taskId) {
     .then(response => response.json())
     .then(task => {
         const content = `
-            <div class="p-3">
-                <h4>${escapeHtml(task.title)} 
+            <div class="task-detail-section">
+                <h4 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                    ${escapeHtml(task.title)} 
                     <span class="badge badge-${getPriorityBadgeClass(task.priority)}">${task.priority}</span>
                     <span class="badge badge-${getStatusBadgeClass(task.status)}">${task.status.replace('_', ' ')}</span>
                 </h4>
                 
-                <div class="mt-3">
-                    <strong>Description:</strong>
-                    <p>${task.description || 'No description'}</p>
+                ${task.description ? `
+                    <div class="task-detail-section">
+                        <strong>Description:</strong>
+                        <p>${escapeHtml(task.description)}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="task-detail-section">
+                    <strong>Assigned To:</strong>
+                    <p>${task.assignedToName || 'Unassigned'}
+                    ${task.assignedToEmail ? ` (${task.assignedToEmail})` : ''}
+                    ${task.assignedToDepartment ? ` - ${task.assignedToDepartment}` : ''}</p>
                 </div>
                 
-                <div class="mt-2">
-                    <strong>Assigned To:</strong> ${task.assignedToName || 'Unassigned'}
-                    ${task.assignedToEmail ? `(${task.assignedToEmail})` : ''}
+                <div class="task-detail-section">
+                    <strong>Assigned By:</strong>
+                    <p>${task.assignedByName}
+                    ${task.assignedByEmail ? ` (${task.assignedByEmail})` : ''}</p>
                 </div>
                 
-                <div class="mt-2">
-                    <strong>Assigned By:</strong> ${task.assignedByName}
-                    ${task.assignedByEmail ? `(${task.assignedByEmail})` : ''}
+                <div class="task-detail-section">
+                    <strong>Due Date:</strong>
+                    <p>${task.dueDate ? formatDate(task.dueDate) : 'No due date'}
+                    ${task.overdue ? '<span class="badge badge-danger ml-2">OVERDUE</span>' : ''}</p>
                 </div>
                 
-                <div class="mt-2">
-                    <strong>Due Date:</strong> ${task.dueDate ? formatDate(task.dueDate) : 'No due date'}
-                    ${task.overdue ? '<span class="badge badge-danger ml-2">OVERDUE</span>' : ''}
-                </div>
-                
-                <div class="mt-2">
-                    <strong>Created:</strong> ${formatDate(task.createdAt)}
+                <div class="task-detail-section">
+                    <strong>Created:</strong>
+                    <p>${formatDate(task.createdAt)}</p>
                 </div>
                 
                 ${task.completedAt ? `
-                    <div class="mt-2">
-                        <strong>Completed:</strong> ${formatDate(task.completedAt)}
+                    <div class="task-detail-section">
+                        <strong>Completed:</strong>
+                        <p>${formatDate(task.completedAt)}</p>
                     </div>
                 ` : ''}
                 
                 ${task.notes ? `
-                    <div class="mt-3">
+                    <div class="task-detail-section">
                         <strong>Notes:</strong>
                         <p>${escapeHtml(task.notes)}</p>
                     </div>
                 ` : ''}
                 
-                <div class="mt-4">
+                <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
                     ${!canAssignTasks && task.assignedToId ? `
                         <button onclick="showStatusUpdateOptions(${task.id}, '${task.status}')" class="btn btn-primary">
                             <i class="fas fa-sync"></i> Update Status
                         </button>
                     ` : ''}
-                    <button onclick="closeViewTaskModal()" class="btn">Close</button>
+                    <button onclick="closeViewTaskModal()" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Close
+                    </button>
                 </div>
             </div>
         `;
         document.getElementById('taskDetailsContent').innerHTML = content;
-        document.getElementById('viewTaskModal').style.display = 'block';
+        document.getElementById('viewTaskModal').style.display = 'flex';
     })
     .catch(error => {
         console.error('Error loading task:', error);
@@ -336,15 +401,15 @@ function showStatusUpdateOptions(taskId, currentStatus) {
     const options = statuses.map(status => 
         `<button onclick="updateMyTaskStatus(${taskId}, '${status}')" 
                  class="btn btn-sm ${status === currentStatus ? 'btn-primary' : ''}" 
-                 style="margin: 5px;">
+                 style="margin: 0.25rem;">
             ${status.replace('_', ' ')}
          </button>`
     ).join('');
     
     document.getElementById('taskDetailsContent').innerHTML += `
-        <div class="mt-3 p-3" style="background: #f5f5f5; border-radius: 5px;">
-            <strong>Update Status:</strong><br>
-            ${options}
+        <div class="status-update-section">
+            <strong>Update Status:</strong>
+            <div class="status-buttons">${options}</div>
         </div>
     `;
 }
@@ -372,13 +437,12 @@ function updateMyTaskStatus(taskId, status) {
 
 // Load employees for assignment dropdown
 function loadEmployeesForAssignment() {
-    fetch('/api/employees', {
+    fetch('/api/employees/list', {
         headers: getHeaders()
     })
     .then(response => response.json())
-    .then(data => {
+    .then(employees => {
         const select = document.getElementById('taskAssignedTo');
-        const employees = data.content || [];
         
         select.innerHTML = '<option value="">Select User...</option>' +
             employees.map(emp => 

@@ -31,6 +31,7 @@ function loadActiveDepartments() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Loaded departments:', data); // Debug log
         allDepartments = data;
         displayDepartments(data);
     })
