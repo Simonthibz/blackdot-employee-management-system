@@ -34,6 +34,7 @@ public class EmployeeController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String department,
             @RequestParam(required = false) String role,
             @RequestParam(required = false) String status) {
         
@@ -46,6 +47,15 @@ public class EmployeeController {
         } else {
             // Otherwise start with all employees
             results = employeeService.getAllEmployees();
+        }
+        
+        // Apply department filter if provided
+        if (department != null && !department.trim().isEmpty()) {
+            final String deptToMatch = department;
+            results = results.stream()
+                    .filter(emp -> emp.getDepartment() != null && 
+                            emp.getDepartment().equalsIgnoreCase(deptToMatch))
+                    .collect(java.util.stream.Collectors.toList());
         }
         
         // Apply status filter if provided (works on search results too)

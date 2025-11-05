@@ -4,8 +4,51 @@ let currentEmployees = [];
 let currentPage = 0;
 const pageSize = 10;
 let searchTerm = '';
+let departmentFilter = '';
 let roleFilter = '';
 let statusFilter = '';
+
+// Load departments for filter
+async function loadDepartments() {
+    try {
+        const response = await fetch('/api/departments', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const departments = await response.json();
+            
+            // Update filter dropdown
+            const departmentFilter = document.getElementById('departmentFilter');
+            departmentFilter.innerHTML = '<option value="">All Departments</option>';
+            
+            // Update form dropdown
+            const departmentSelect = document.getElementById('departmentSelect');
+            departmentSelect.innerHTML = '<option value="">Select Department</option>';
+            
+            // Add department options to both dropdowns
+            departments.forEach(dept => {
+                // Filter dropdown
+                const filterOption = document.createElement('option');
+                filterOption.value = dept.name;
+                filterOption.textContent = dept.name;
+                departmentFilter.appendChild(filterOption);
+                
+                // Form dropdown
+                const selectOption = document.createElement('option');
+                selectOption.value = dept.name;
+                selectOption.textContent = dept.name;
+                departmentSelect.appendChild(selectOption);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading departments:', error);
+    }
+}
 
 // Load employees from API
 async function loadEmployees(page = 0) {
@@ -15,6 +58,7 @@ async function loadEmployees(page = 0) {
         let url = `/api/employees?page=${currentPage}&size=${pageSize}`;
         
         if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+        if (departmentFilter) url += `&department=${encodeURIComponent(departmentFilter)}`;
         if (roleFilter) url += `&role=${roleFilter}`;
         if (statusFilter) url += `&status=${statusFilter}`;
         
@@ -53,7 +97,7 @@ function displayEmployees(employees) {
     if (employees.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="11" class="text-center p-3">
+                <td colspan="7" class="text-center p-3">
                     <i class="fas fa-info-circle"></i> No employees found
                 </td>
             </tr>
@@ -67,68 +111,68 @@ function displayEmployees(employees) {
         // Employee Status Badge
         const statusBadge = getStatusBadge(employee.employeeStatus || (employee.isActive ? 'ACTIVE' : 'INACTIVE'));
         
-        // Employment Type Badge
-        const typeBadge = getEmploymentTypeBadge(employee.employmentType || 'PERMANENT');
-        
-        // Clearance Level Badge
-        const clearanceBadge = getClearanceBadge(employee.clearanceLevel || 'PUBLIC');
-        
-        // Contract Information
-        const contractInfo = getContractInfo(employee);
+        // Get primary role
+        const primaryRole = employee.roleNames && employee.roleNames.length > 0 
+            ? employee.roleNames[0].replace('ROLE_', '') 
+            : 'No Role';
         
         row.innerHTML = `
-            <td>
-                <strong>${employee.employeeId || 'N/A'}</strong>
-                ${employee.isInProbation ? '<br><span class="badge badge-warning">Probation</span>' : ''}
-            </td>
-            <td>
-                <strong>${employee.firstName} ${employee.lastName}</strong><br>
-                <small style="color: #7f8c8d;">@${employee.username}</small>
-                ${employee.branchOffice ? `<br><small><i class="fas fa-building"></i> ${employee.branchOffice}</small>` : ''}
-            </td>
-            <td>
-                ${employee.email}
-                ${employee.phoneNumber ? `<br><small><i class="fas fa-phone"></i> ${employee.phoneNumber}</small>` : ''}
-            </td>
-            <td>
-                <strong>${employee.department || 'N/A'}</strong>
-                ${employee.costCenter ? `<br><small>CC: ${employee.costCenter}</small>` : ''}
-            </td>
-            <td>
-                <strong>${employee.position || 'N/A'}</strong>
-                ${employee.jobGrade ? `<br><small>Grade: ${employee.jobGrade}</small>` : ''}
-            </td>
+            <td><strong>${employee.employeeId || 'N/A'}</strong></td>
+            <td><strong>${employee.firstName} ${employee.lastName}</strong></td>
+            <td>${employee.department || 'N/A'}</td>
+            <td>${employee.position || 'N/A'}</td>
             <td>${statusBadge}</td>
-            <td>${typeBadge}</td>
-            <td>${clearanceBadge}</td>
-            <td>
-                ${employee.roleNames ? employee.roleNames.map(role => 
-                    `<span class="badge badge-secondary" style="margin-right: 0.25rem;">
-                        ${role.replace('ROLE_', '')}
-                    </span>`
-                ).join('') : 'No roles'}
-            </td>
-            <td class="contract-info">
-                ${contractInfo}
-            </td>
-            <td>
-                <button onclick="viewEmployeeDetails(${employee.id})" class="btn btn-sm" style="margin-right: 0.5rem;" title="View Details">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editEmployee(${employee.id})" class="btn btn-sm" style="margin-right: 0.5rem;" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="changeEmployeeStatus(${employee.id})" class="btn btn-sm btn-warning" style="margin-right: 0.5rem;" title="Change Status">
-                    <i class="fas fa-exchange-alt"></i>
-                </button>
-                <button onclick="deleteEmployee(${employee.id})" class="btn btn-sm btn-danger" title="Delete">
-                    <i class="fas fa-trash"></i>
-                </button>
+            <td><span class="badge badge-secondary">${primaryRole}</span></td>
+            <td class="text-center">
+                <div class="action-menu">
+                    <button class="action-btn" onclick="toggleActionMenu(event, ${employee.id})" title="Actions">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="action-dropdown" id="actionMenu-${employee.id}">
+                        <button class="action-item" onclick="viewEmployeeDetails(${employee.id})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="action-item" onclick="editEmployee(${employee.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="action-item" onclick="changeEmployeeStatus(${employee.id})">
+                            <i class="fas fa-exchange-alt"></i> Change Status
+                        </button>
+                        <button class="action-item danger" onclick="deleteEmployee(${employee.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
             </td>
         `;
         tbody.appendChild(row);
     });
 }
+
+// Toggle action menu
+function toggleActionMenu(event, employeeId) {
+    event.stopPropagation();
+    
+    // Close all other menus
+    document.querySelectorAll('.action-dropdown').forEach(menu => {
+        if (menu.id !== `actionMenu-${employeeId}`) {
+            menu.classList.remove('show');
+        }
+    });
+    
+    // Toggle this menu
+    const menu = document.getElementById(`actionMenu-${employeeId}`);
+    menu.classList.toggle('show');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.action-menu')) {
+        document.querySelectorAll('.action-dropdown').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
 
 // Helper functions for badges and formatting
 function getStatusBadge(status) {
@@ -248,12 +292,14 @@ function updatePagination(data) {
 // Filter employees
 function filterEmployees() {
     const search = document.getElementById('searchInput').value;
+    const department = document.getElementById('departmentFilter').value;
     const role = document.getElementById('roleFilter').value;
     const status = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
     
     let url = `/api/employees?page=${currentPage}&size=${pageSize}`;
     
     if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (department) url += `&department=${encodeURIComponent(department)}`;
     if (role) url += `&role=${role}`;
     if (status) url += `&status=${status}`;
     
@@ -345,7 +391,7 @@ function populateEmployeeForm(employee) {
     document.getElementById('clearanceLevel').value = employee.clearanceLevel || 'PUBLIC';
     
     // Organizational Information
-    document.getElementById('department').value = employee.department || '';
+    document.getElementById('departmentSelect').value = employee.department || '';
     document.getElementById('position').value = employee.position || '';
     document.getElementById('branchOffice').value = employee.branchOffice || '';
     document.getElementById('costCenter').value = employee.costCenter || '';
@@ -717,11 +763,19 @@ Enter status:`);
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    loadDepartments();
     loadEmployees();
     
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function(e) {
         searchTerm = e.target.value;
+        currentPage = 0;
+        loadEmployees();
+    });
+    
+    // Department filter
+    document.getElementById('departmentFilter').addEventListener('change', function(e) {
+        departmentFilter = e.target.value;
         currentPage = 0;
         loadEmployees();
     });
