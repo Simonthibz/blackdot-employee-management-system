@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management - Blackdot EMS</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{layout/admin-layout :: header}"></div>
+
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{layout/admin-layout :: sidebar('employees')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="mb-3">
+            <h2><i class="fas fa-users"></i> Employee Management</h2>
+            <p>Manage company employees and their roles</p>
+        </div>
+
+        <!-- Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" id="searchInput" placeholder="Search employees..." class="form-control" style="width: 300px;">
+                <select id="roleFilter" class="form-control" style="width: 200px;">
+                    <option value="">All Roles</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="HR">HR</option>
+                    <option value="DATA_CAPTURER">Data Capturer</option>
+                    <option value="SUPERVISOR">Supervisor</option>
+                    <option value="EMPLOYEE">Employee</option>
+                </select>
+                <select id="statusFilter" class="form-control" style="width: 150px;">
+                    <option value="">All Status</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="PROBATION">Probation</option>
+                    <option value="ON_LEAVE">On Leave</option>
+                    <option value="SUSPENDED">Suspended</option>
+                    <option value="BLOCKED">Blocked</option>
+                    <option value="TERMINATED">Terminated</option>
+                    <option value="PENDING_START">Pending Start</option>
+                </select>
+            </div>
+            <div>
+                <button onclick="showAddEmployeeModal()" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Employee
+                </button>
+            </div>
+        </div>
+
+        <!-- Employee Table -->
+        <div class="table-container">
+            <table class="table" id="employeeTable">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Employment Type</th>
+                        <th>Security Level</th>
+                        <th>Roles</th>
+                        <th>Contract</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                    <!-- Employee rows will be loaded here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div style="display: flex; justify-content: between; align-items: center; margin-top: 1rem;">
+            <div id="paginationInfo">Showing 0 employees</div>
+            <div id="paginationControls"></div>
+        </div>
+    </main>
+
+    <!-- Add/Edit Employee Modal -->
+    <div id="employeeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Employee</h3>
+                <span class="modal-close" onclick="closeEmployeeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="employeeForm">
+                    <input type="hidden" id="employeeId">
+                    
+                    <!-- Basic Information -->
+                    <h4><i class="fas fa-user"></i> Basic Information</h4>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="employeeIdInput" class="form-label">Employee ID</label>
+                            <input type="text" id="employeeIdInput" name="employeeId" class="form-control" required>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" id="firstName" name="firstName" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" id="username" name="username" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="email" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Status Management -->
+                    <h4><i class="fas fa-user-check"></i> Employee Status & Classification</h4>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="employeeStatus" class="form-label">Employee Status</label>
+                                <select id="employeeStatus" name="employeeStatus" class="form-control">
+                                    <option value="PENDING_START">Pending Start</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="SUSPENDED">Suspended</option>
+                                    <option value="BLOCKED">Blocked</option>
+                                    <option value="ON_LEAVE">On Leave</option>
+                                    <option value="PROBATION">Probation</option>
+                                    <option value="TERMINATED">Terminated</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="employmentType" class="form-label">Employment Type</label>
+                                <select id="employmentType" name="employmentType" class="form-control">
+                                    <option value="PERMANENT">Permanent</option>
+                                    <option value="CONTRACT">Contract</option>
+                                    <option value="TEMPORARY">Temporary</option>
+                                    <option value="CONSULTANT">Consultant</option>
+                                    <option value="INTERN">Intern</option>
+                                    <option value="PART_TIME">Part-Time</option>
+                                    <option value="SEASONAL">Seasonal</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clearanceLevel" class="form-label">Security Level</label>
+                                <select id="clearanceLevel" name="clearanceLevel" class="form-control">
+                                    <option value="PUBLIC">Public</option>
+                                    <option value="INTERNAL">Internal</option>
+                                    <option value="CONFIDENTIAL">Confidential</option>
+                                    <option value="RESTRICTED">Restricted</option>
+                                    <option value="SECRET">Secret</option>
+                                    <option value="EXECUTIVE">Executive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Organizational Information -->
+                    <h4><i class="fas fa-building"></i> Organizational Information</h4>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="department" class="form-label">Department</label>
+                                <input type="text" id="department" name="department" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="position" class="form-label">Position</label>
+                                <input type="text" id="position" name="position" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="branchOffice" class="form-label">Branch Office</label>
+                                <input type="text" id="branchOffice" name="branchOffice" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="costCenter" class="form-label">Cost Center</label>
+                                <input type="text" id="costCenter" name="costCenter" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="jobGrade" class="form-label">Job Grade</label>
+                                <input type="text" id="jobGrade" name="jobGrade" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contract Information -->
+                    <h4><i class="fas fa-file-contract"></i> Contract Information</h4>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="hireDate" class="form-label">Hire Date</label>
+                                <input type="date" id="hireDate" name="hireDate" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="contractStartDate" class="form-label">Contract Start</label>
+                                <input type="date" id="contractStartDate" name="contractStartDate" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="contractEndDate" class="form-label">Contract End</label>
+                                <input type="date" id="contractEndDate" name="contractEndDate" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="probationEndDate" class="form-label">Probation End Date</label>
+                                <input type="date" id="probationEndDate" name="probationEndDate" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="noticePeriodDays" class="form-label">Notice Period (Days)</label>
+                                <input type="number" id="noticePeriodDays" name="noticePeriodDays" class="form-control" value="30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <h4><i class="fas fa-phone"></i> Contact Information</h4>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="phoneNumber" class="form-label">Phone Number</label>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="emergencyContactName" class="form-label">Emergency Contact</label>
+                                <input type="text" id="emergencyContactName" name="emergencyContactName" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea id="address" name="address" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Professional Information -->
+                    <h4><i class="fas fa-graduation-cap"></i> Professional Information</h4>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="highestQualification" class="form-label">Highest Qualification</label>
+                                <input type="text" id="highestQualification" name="highestQualification" class="form-control">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="yearsOfExperience" class="form-label">Years of Experience</label>
+                                <input type="number" id="yearsOfExperience" name="yearsOfExperience" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="professionalCertifications" class="form-label">Professional Certifications</label>
+                            <textarea id="professionalCertifications" name="professionalCertifications" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Security & Compliance -->
+                    <h4><i class="fas fa-lock"></i> Security & Compliance</h4>
+                    <div class="form-section">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="backgroundCheckStatus" class="form-label">Background Check Status</label>
+                                <select id="backgroundCheckStatus" name="backgroundCheckStatus" class="form-control">
+                                    <option value="Pending">Pending</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Failed">Failed</option>
+                                    <option value="Expired">Expired</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="backgroundCheckDate" class="form-label">Background Check Date</label>
+                                <input type="date" id="backgroundCheckDate" name="backgroundCheckDate" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="securityTrainingCompleted" name="securityTrainingCompleted"> Security Training Completed
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="confidentialityAgreementSigned" name="confidentialityAgreementSigned"> Confidentiality Agreement Signed
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="dataPrivacyConsent" name="dataPrivacyConsent"> Data Privacy Consent Given
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- System Access -->
+                    <h4><i class="fas fa-key"></i> System Access</h4>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="roles" class="form-label">Roles</label>
+                            <div id="rolesCheckboxes" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="roles" value="ROLE_ADMIN"> Admin
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="roles" value="ROLE_HR"> HR
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="roles" value="ROLE_DATA_CAPTURER"> Data Capturer
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="roles" value="ROLE_SUPERVISOR"> Supervisor
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" name="roles" value="ROLE_EMPLOYEE"> Employee
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="passwordGroup">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" name="password" class="form-control">
+                            <small>Leave blank to keep current password when editing</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="isActive" name="isActive" checked> Legacy Active Status (Auto-managed by Employee Status)
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeEmployeeModal()" class="btn btn-secondary">Cancel</button>
+                <button type="button" onclick="saveEmployee()" class="btn btn-success">Save Employee</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #adb5bd;
+        }
+        
+        .modal-close:hover {
+            color: #6c757d;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .form-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+        }
+        
+        .form-section h4 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .badge {
+            padding: 0.25em 0.6em;
+            font-size: 0.75em;
+            font-weight: 700;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-warning { background-color: #ffc107; color: #212529; }
+        .badge-danger { background-color: #dc3545; color: white; }
+        .badge-info { background-color: #17a2b8; color: white; }
+        .badge-secondary { background-color: #6c757d; color: white; }
+        .badge-primary { background-color: #007bff; color: white; }
+        
+        .contract-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .contract-expiring {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .clearance-badge {
+            padding: 0.2em 0.5em;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .clearance-public { background-color: #e9ecef; color: #495057; }
+        .clearance-internal { background-color: #d4edda; color: #155724; }
+        .clearance-confidential { background-color: #fff3cd; color: #856404; }
+        .clearance-restricted { background-color: #f8d7da; color: #721c24; }
+        .clearance-secret { background-color: #d1ecf1; color: #0c5460; }
+        .clearance-executive { background-color: #d6d8db; color: #383d41; }
+    </style>
+
+    <!-- Common Scripts -->
+    <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
+    
+    <!-- Page Specific Scripts -->
+    <script th:src="@{/js/employees.js}"></script>
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEmployees();
+            
+            // Setup search and filter
+            document.getElementById('searchInput').addEventListener('input', filterEmployees);
+            document.getElementById('roleFilter').addEventListener('change', filterEmployees);
+            document.getElementById('statusFilter').addEventListener('change', filterEmployees);
+        });
+    </script>
+</body>
+</html>

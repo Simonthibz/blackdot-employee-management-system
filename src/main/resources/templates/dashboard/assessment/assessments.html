@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessments - Blackdot EMS</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{layout/admin-layout :: header}"></div>
+
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{layout/admin-layout :: sidebar('assessments')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="mb-3">
+            <h2><i class="fas fa-clipboard-list"></i> Assessment Management</h2>
+            <p>Create, manage, and monitor quarterly assessments</p>
+        </div>
+
+        <!-- Assessment Actions -->
+        <div class="dashboard-grid mb-3">
+            <div class="table-container p-3">
+                <h4><i class="fas fa-plus-circle"></i> Create Assessment</h4>
+                <p>Create a new quarterly assessment for employees</p>
+                <button onclick="showCreateAssessmentModal()" class="btn btn-success">
+                    <i class="fas fa-plus"></i> New Assessment
+                </button>
+            </div>
+
+            <div class="table-container p-3">
+                <h4><i class="fas fa-eye"></i> Monitor Progress</h4>
+                <p>Track assessment completion and performance</p>
+                <button onclick="loadAssessmentProgress()" class="btn btn-primary">
+                    <i class="fas fa-chart-line"></i> View Progress
+                </button>
+            </div>
+
+            <div class="table-container p-3">
+                <h4><i class="fas fa-clock"></i> Current Quarter</h4>
+                <p>Q4 2025 assessments and deadlines</p>
+                <button onclick="loadCurrentQuarter()" class="btn btn-warning">
+                    <i class="fas fa-calendar"></i> Q4 2025
+                </button>
+            </div>
+        </div>
+
+        <!-- Assessments List -->
+        <div class="table-container">
+            <div class="p-3 d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-list"></i> All Assessments</h4>
+                <div>
+                    <input type="text" id="searchAssessments" placeholder="Search assessments..." class="form-control" style="width: 250px; display: inline-block;">
+                    <button onclick="refreshAssessments()" class="btn btn-primary btn-sm" style="margin-left: 0.5rem;">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Quarter</th>
+                        <th>Year</th>
+                        <th>Status</th>
+                        <th>Attempts</th>
+                        <th>Pass Rate</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="assessmentsTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <i class="fas fa-spinner fa-spin"></i> Loading assessments...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Assessment Progress Section -->
+        <div id="progressSection" style="display: none; margin-top: 2rem;">
+            <h3><i class="fas fa-chart-line"></i> Assessment Progress</h3>
+            
+            <div class="dashboard-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <h3 id="totalAssessments">0</h3>
+                    <p><i class="fas fa-clipboard-list"></i> Total Assessments</p>
+                </div>
+                <div class="stat-card success">
+                    <h3 id="completedAttempts">0</h3>
+                    <p><i class="fas fa-check-circle"></i> Completed</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3 id="pendingAttempts">0</h3>
+                    <p><i class="fas fa-clock"></i> Pending</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="overallPassRate">0%</h3>
+                    <p><i class="fas fa-percent"></i> Pass Rate</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="p-3">
+                    <h4>Assessment Details</h4>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Assessment</th>
+                            <th>Total Employees</th>
+                            <th>Completed</th>
+                            <th>Passed</th>
+                            <th>Failed</th>
+                            <th>Completion Rate</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="progressTableBody">
+                        <!-- Progress data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Assessment Modal -->
+    <div id="createAssessmentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Create New Assessment</h3>
+                <span class="close" onclick="hideCreateAssessmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="createAssessmentForm">
+                    <div class="form-group">
+                        <label for="assessmentTitle">Assessment Title</label>
+                        <input type="text" id="assessmentTitle" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assessmentDescription">Description</label>
+                        <textarea id="assessmentDescription" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1; margin-right: 1rem;">
+                            <label for="assessmentQuarter">Quarter</label>
+                            <select id="assessmentQuarter" class="form-control" required>
+                                <option value="Q1">Q1 - January to March</option>
+                                <option value="Q2">Q2 - April to June</option>
+                                <option value="Q3">Q3 - July to September</option>
+                                <option value="Q4" selected>Q4 - October to December</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="flex: 1;">
+                            <label for="assessmentYear">Year</label>
+                            <input type="number" id="assessmentYear" class="form-control" value="2025" min="2020" max="2030" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1; margin-right: 1rem;">
+                            <label for="maxAttempts">Max Attempts</label>
+                            <input type="number" id="maxAttempts" class="form-control" value="3" min="1" max="10" required>
+                        </div>
+                        
+                        <div class="form-group" style="flex: 1;">
+                            <label for="passingScore">Passing Score (%)</label>
+                            <input type="number" id="passingScore" class="form-control" value="70" min="1" max="100" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deadlineDate">Deadline</label>
+                        <input type="date" id="deadlineDate" class="form-control" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="hideCreateAssessmentModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" onclick="createAssessment()" class="btn btn-success">
+                    <i class="fas fa-save"></i> Create Assessment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let assessments = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAssessments();
+            
+            // Set default deadline to end of current quarter
+            const now = new Date();
+            const quarterEnd = new Date(now.getFullYear(), 11, 31); // End of Q4
+            document.getElementById('deadlineDate').value = quarterEnd.toISOString().split('T')[0];
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        async function loadAssessments() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/assessments', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    assessments = await response.json();
+                    displayAssessments(assessments);
+                } else {
+                    showNotification('Failed to load assessments', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error loading assessments', 'error');
+            }
+        }
+
+        function displayAssessments(assessmentList) {
+            const tbody = document.getElementById('assessmentsTableBody');
+            
+            if (assessmentList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <i class="fas fa-info-circle"></i> No assessments found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = assessmentList.map(assessment => `
+                <tr>
+                    <td>
+                        <strong>${assessment.title}</strong>
+                        <br><small class="text-muted">${assessment.description || 'No description'}</small>
+                    </td>
+                    <td><span class="badge badge-info">${assessment.quarter}</span></td>
+                    <td>${assessment.year}</td>
+                    <td>
+                        <span class="badge ${assessment.isActive ? 'badge-success' : 'badge-secondary'}">
+                            ${assessment.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>${assessment.totalAttempts || 0}</td>
+                    <td>${assessment.passRate || 0}%</td>
+                    <td>
+                        <button onclick="viewAssessmentDetails(${assessment.id})" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button onclick="editAssessment(${assessment.id})" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showCreateAssessmentModal() {
+            document.getElementById('createAssessmentModal').style.display = 'flex';
+        }
+
+        function hideCreateAssessmentModal() {
+            document.getElementById('createAssessmentModal').style.display = 'none';
+            document.getElementById('createAssessmentForm').reset();
+        }
+
+        async function createAssessment() {
+            const formData = {
+                title: document.getElementById('assessmentTitle').value,
+                description: document.getElementById('assessmentDescription').value,
+                quarter: document.getElementById('assessmentQuarter').value,
+                year: parseInt(document.getElementById('assessmentYear').value),
+                maxAttempts: parseInt(document.getElementById('maxAttempts').value),
+                passingScore: parseInt(document.getElementById('passingScore').value),
+                deadline: document.getElementById('deadlineDate').value,
+                isActive: true
+            };
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/assessments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showNotification('Assessment created successfully!', 'success');
+                    hideCreateAssessmentModal();
+                    loadAssessments();
+                } else {
+                    showNotification('Failed to create assessment', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error creating assessment', 'error');
+            }
+        }
+
+        async function loadAssessmentProgress() {
+            document.getElementById('progressSection').style.display = 'block';
+            showNotification('Loading assessment progress...', 'info');
+            
+            // Mock data for demonstration
+            document.getElementById('totalAssessments').textContent = assessments.length;
+            document.getElementById('completedAttempts').textContent = '45';
+            document.getElementById('pendingAttempts').textContent = '15';
+            document.getElementById('overallPassRate').textContent = '82%';
+
+            const progressTableBody = document.getElementById('progressTableBody');
+            progressTableBody.innerHTML = assessments.map(assessment => `
+                <tr>
+                    <td>${assessment.title}</td>
+                    <td>60</td>
+                    <td>45</td>
+                    <td>37</td>
+                    <td>8</td>
+                    <td>75%</td>
+                    <td>
+                        <button onclick="viewAssessmentDetails(${assessment.id})" class="btn btn-sm btn-primary">
+                            <i class="fas fa-chart-bar"></i> Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadCurrentQuarter() {
+            showNotification('Loading Q4 2025 assessments...', 'info');
+            const currentQuarterAssessments = assessments.filter(a => a.quarter === 'Q4' && a.year === 2025);
+            displayAssessments(currentQuarterAssessments);
+        }
+
+        function refreshAssessments() {
+            loadAssessments();
+            showNotification('Assessments refreshed', 'success');
+        }
+
+        function viewAssessmentDetails(assessmentId) {
+            showNotification('Assessment details feature coming soon!', 'info');
+        }
+
+        function editAssessment(assessmentId) {
+            showNotification('Assessment editing feature coming soon!', 'info');
+        }
+
+        // Search functionality
+        document.getElementById('searchAssessments').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredAssessments = assessments.filter(assessment => 
+                assessment.title.toLowerCase().includes(searchTerm) ||
+                assessment.description.toLowerCase().includes(searchTerm) ||
+                assessment.quarter.toLowerCase().includes(searchTerm)
+            );
+            displayAssessments(filteredAssessments);
+        });
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 4px;
+                color: white;
+                font-weight: 500;
+                z-index: 3000;
+                background-color: ${type === 'success' ? '#27ae60' : 
+                                   type === 'warning' ? '#f39c12' : 
+                                   type === 'error' ? '#e74c3c' : '#3498db'};
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+    </script>
+
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .badge-info { background-color: #17a2b8; color: white; }
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-secondary { background-color: #6c757d; color: white; }
+    </style>
+
+    <!-- Common Scripts -->
+    <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Blackdot EMS</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{layout/admin-layout :: header}"></div>
+
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{layout/admin-layout :: sidebar('dashboard')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="mb-3">
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
+            <p>Welcome to the Blackdot Employee Management System</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <h3 th:text="${stats.totalEmployees}">0</h3>
+                <p><i class="fas fa-users"></i> Total Employees</p>
+            </div>
+            
+            <div class="stat-card success">
+                <h3 th:text="${stats.activeEmployees}">0</h3>
+                <p><i class="fas fa-user-check"></i> Active Employees</p>
+            </div>
+            
+            <div class="stat-card warning">
+                <h3 th:text="${stats.dataCapturers}">0</h3>
+                <p><i class="fas fa-keyboard"></i> Data Capturers</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3 th:text="${stats.activeAssessments}">0</h3>
+                <p><i class="fas fa-clipboard-list"></i> Active Assessments</p>
+            </div>
+        </div>
+
+        <!-- Quarterly Assessment Statistics -->
+        <div class="dashboard-grid">
+            <div class="stat-card success">
+                <h3 th:text="${stats.quarterlyPassed}">0</h3>
+                <p><i class="fas fa-check-circle"></i> Passed This Quarter</p>
+            </div>
+            
+            <div class="stat-card danger">
+                <h3 th:text="${stats.quarterlyFailed}">0</h3>
+                <p><i class="fas fa-times-circle"></i> Failed This Quarter</p>
+            </div>
+            
+            <div class="stat-card warning">
+                <h3 th:text="${stats.incompleteAssessments}">0</h3>
+                <p><i class="fas fa-clock"></i> Incomplete Assessments</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3 th:text="${stats.passRate + '%'}">0%</h3>
+                <p><i class="fas fa-percent"></i> Pass Rate</p>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+            <!-- Pass Rate Chart -->
+            <div class="table-container p-3">
+                <h4><i class="fas fa-chart-pie"></i> Quarterly Pass Rate</h4>
+                <div style="position: relative; height: 250px;">
+                    <canvas id="passRateChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Assessment Activity Chart -->
+            <div class="table-container p-3">
+                <h4><i class="fas fa-chart-line"></i> Assessment Activity</h4>
+                <div style="position: relative; height: 250px;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Table -->
+        <div class="table-container mt-3">
+            <div class="p-3">
+                <h4><i class="fas fa-clock"></i> System Overview</h4>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Current Value</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="fas fa-users"></i> Total Employees</td>
+                        <td th:text="${stats.totalEmployees}">0</td>
+                        <td><span class="badge badge-success">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-clipboard-list"></i> Active Assessments</td>
+                        <td th:text="${stats.activeAssessments}">0</td>
+                        <td><span class="badge badge-success">Running</span></td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-percentage"></i> Quarterly Pass Rate</td>
+                        <td th:text="${stats.passRate + '%'}">0%</td>
+                        <td>
+                            <span th:class="${stats.passRate >= 80} ? 'badge badge-success' : 
+                                           (${stats.passRate >= 60} ? 'badge badge-warning' : 'badge badge-danger')"
+                                  th:text="${stats.passRate >= 80} ? 'Excellent' : 
+                                           (${stats.passRate >= 60} ? 'Good' : 'Needs Attention')">Status</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-clock"></i> Incomplete Assessments</td>
+                        <td th:text="${stats.incompleteAssessments}">0</td>
+                        <td>
+                            <span th:class="${stats.incompleteAssessments == 0} ? 'badge badge-success' : 
+                                           (${stats.incompleteAssessments <= 5} ? 'badge badge-warning' : 'badge badge-danger')"
+                                  th:text="${stats.incompleteAssessments == 0} ? 'All Complete' : 
+                                           (${stats.incompleteAssessments <= 5} ? 'Monitor' : 'Action Required')">Status</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        // Pass Rate Doughnut Chart
+        const passCtx = document.getElementById('passRateChart').getContext('2d');
+        const passRateChart = new Chart(passCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Passed', 'Failed'],
+                datasets: [{
+                    data: [/*[[${stats.quarterlyPassed}]]*/ 0, /*[[${stats.quarterlyFailed}]]*/ 0],
+                    backgroundColor: ['#27ae60', '#e74c3c'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Activity Line Chart
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        const activityChart = new Chart(activityCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Employees', 'Data Capturers', 'Active Assessments', 'Quarterly Attempts'],
+                datasets: [{
+                    label: 'Count',
+                    data: [
+                        /*[[${stats.totalEmployees}]]*/ 0, 
+                        /*[[${stats.dataCapturers}]]*/ 0, 
+                        /*[[${stats.activeAssessments}]]*/ 0, 
+                        /*[[${stats.quarterlyAttempts}]]*/ 0
+                    ],
+                    backgroundColor: ['#3498db', '#f39c12', '#9b59b6', '#1abc9c'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    <!-- Common Scripts -->
+    <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
+</body>
+</html>

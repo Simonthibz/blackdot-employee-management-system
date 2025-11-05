@@ -1,0 +1,87 @@
+# Professional Employee Management System API Tests
+# Run these requests to test the enhanced features
+
+### 1. Login as admin to get JWT token
+POST http://localhost:8080/api/auth/signin
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password"
+}
+
+### 2. Get all employees (should show professional fields)
+GET http://localhost:8080/api/employees
+Authorization: Bearer {{jwt_token}}
+
+### 3. Get employee status enum values
+GET http://localhost:8080/api/employees/enums/statuses
+Authorization: Bearer {{jwt_token}}
+
+### 4. Get employment type enum values
+GET http://localhost:8080/api/employees/enums/employment-types
+Authorization: Bearer {{jwt_token}}
+
+### 5. Get security level enum values
+GET http://localhost:8080/api/employees/enums/clearance-levels
+Authorization: Bearer {{jwt_token}}
+
+### 6. Get employee statistics
+GET http://localhost:8080/api/employees/government-stats
+Authorization: Bearer {{jwt_token}}
+
+### 7. Get employees by status (Active)
+GET http://localhost:8080/api/employees/by-status/ACTIVE
+Authorization: Bearer {{jwt_token}}
+
+### 8. Get employees requiring background check renewal
+GET http://localhost:8080/api/employees/background-check-renewal
+Authorization: Bearer {{jwt_token}}
+
+### 9. Get employees with expiring contracts
+GET http://localhost:8080/api/employees/expiring-contracts
+Authorization: Bearer {{jwt_token}}
+
+### 10. Get employees in probation
+GET http://localhost:8080/api/employees/in-probation
+Authorization: Bearer {{jwt_token}}
+
+### 11. Change employee status (example: change employee ID 1 to SUSPENDED)
+PUT http://localhost:8080/api/employees/1/status
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "newStatus": "SUSPENDED",
+  "reason": "Security incident investigation",
+  "changedBy": 1
+}
+
+### 12. Update employee security level (example: employee ID 1)
+PUT http://localhost:8080/api/employees/1/clearance
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "clearanceLevel": "CONFIDENTIAL",
+  "backgroundCheckStatus": "Completed",
+  "backgroundCheckDate": "2025-11-05"
+}
+
+### 13. Create a new employee with professional defaults
+POST http://localhost:8080/api/employees
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "username": "john.smith",
+  "email": "john.smith@blackdot.com",
+  "password": "TempPassword123!",
+  "firstName": "John",
+  "lastName": "Smith",
+  "employeeId": "BD-VAL-2025-001",
+  "department": "Property Valuation",
+  "position": "Senior Valuer",
+  "hireDate": "2025-11-05",
+  "roles": ["EMPLOYEE"]
+}

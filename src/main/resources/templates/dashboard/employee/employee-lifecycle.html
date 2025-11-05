@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Lifecycle Management - Blackdot EMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .lifecycle-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .lifecycle-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-bottom: 2px solid var(--secondary-color);
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .event-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .event-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .event-overdue {
+            border-left-color: var(--danger-color);
+            background: linear-gradient(to right, #fff, #ffeaea);
+        }
+
+        .event-due-soon {
+            border-left-color: var(--warning-color);
+            background: linear-gradient(to right, #fff, #fff9e6);
+        }
+
+        .event-completed {
+            border-left-color: var(--success-color);
+            background: linear-gradient(to right, #fff, #eafaf1);
+        }
+
+        .priority-high {
+            border-top: 3px solid var(--danger-color);
+        }
+
+        .priority-medium {
+            border-top: 3px solid var(--warning-color);
+        }
+
+        .priority-low {
+            border-top: 3px solid var(--info-color);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-pills .nav-link.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            border-radius: 25px;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .workflow-button {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .modal-header {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .table-custom {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-custom thead {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        }
+
+        .table-custom tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .nav-pills {
+                flex-direction: column;
+            }
+            
+            .nav-pills .nav-link {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2 animate__animated animate__fadeInDown">
+                        <i class="bi bi-diagram-3"></i> Employee Lifecycle Management
+                    </h1>
+                    <p class="mb-0 animate__animated animate__fadeInUp">
+                        Comprehensive employee journey tracking and workflow automation
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-light btn-primary-custom" onclick="showCreateEventModal()">
+                        <i class="bi bi-plus-circle"></i> Create Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <!-- Statistics Dashboard -->
+        <div class="stats-grid animate__animated animate__fadeInUp">
+            <div class="stat-card" style="border-left-color: var(--info-color);">
+                <div class="stat-value text-info" id="totalEventsCount">0</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--warning-color);">
+                <div class="stat-value text-warning" id="pendingEventsCount">0</div>
+                <div class="stat-label">Pending Events</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--danger-color);">
+                <div class="stat-value text-danger" id="overdueEventsCount">0</div>
+                <div class="stat-label">Overdue Events</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--success-color);">
+                <div class="stat-value text-success" id="completedEventsCount">0</div>
+                <div class="stat-label">Completed Events</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="lifecycle-card animate__animated animate__fadeInUp">
+            <div class="card-header-custom">
+                <ul class="nav nav-pills" id="lifecycleTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" 
+                                data-bs-target="#dashboard" type="button" role="tab">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="events-tab" data-bs-toggle="pill" 
+                                data-bs-target="#events" type="button" role="tab">
+                            <i class="bi bi-calendar-event"></i> All Events
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="workflows-tab" data-bs-toggle="pill" 
+                                data-bs-target="#workflows" type="button" role="tab">
+                            <i class="bi bi-diagram-3"></i> Workflows
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="reports-tab" data-bs-toggle="pill" 
+                                data-bs-target="#reports" type="button" role="tab">
+                            <i class="bi bi-graph-up"></i> Reports
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body">
+                <div class="tab-content" id="lifecycleTabsContent">
+                    <!-- Dashboard Tab -->
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                        <div class="row">
+                            <!-- Overdue Events -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-exclamation-triangle"></i> Overdue Events
+                                        </h5>
+                                    </div>
+                                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                        <div id="overdueEventsList">
+                                            <div class="loading-spinner">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Due Soon Events -->
+                            <div class="col-lg-6 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header bg-warning text-white">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-clock"></i> Due Soon
+                                        </h5>
+                                    </div>
+                                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                        <div id="dueSoonEventsList">
+                                            <div class="loading-spinner">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Recent Activity -->
+                            <div class="col-lg-8 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-activity"></i> Recent Activity
+                                        </h5>
+                                    </div>
+                                    <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                        <div id="recentActivityList">
+                                            <div class="loading-spinner">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="col-lg-4 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-lightning"></i> Quick Actions
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button class="workflow-button" onclick="showOnboardingModal()">
+                                                <i class="bi bi-person-plus"></i> Start Onboarding
+                                            </button>
+                                            <button class="workflow-button" onclick="showProbationModal()">
+                                                <i class="bi bi-hourglass-split"></i> Start Probation
+                                            </button>
+                                            <button class="workflow-button" onclick="showPerformanceReviewModal()">
+                                                <i class="bi bi-star"></i> Schedule Review
+                                            </button>
+                                            <button class="workflow-button" onclick="createContractRenewalReminders()">
+                                                <i class="bi bi-file-text"></i> Contract Renewals
+                                            </button>
+                                            <button class="workflow-button" onclick="createAnnualReviewCycle()">
+                                                <i class="bi bi-calendar-range"></i> Annual Reviews
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All Events Tab -->
+                    <div class="tab-pane fade" id="events" role="tabpanel">
+                        <!-- Search and Filter Section -->
+                        <div class="filter-section">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="search-container">
+                                        <i class="bi bi-search search-icon"></i>
+                                        <input type="text" class="form-control search-input" 
+                                               id="eventSearchInput" placeholder="Search events...">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">All Statuses</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="typeFilter">
+                                        <option value="">All Types</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Events Table -->
+                        <div class="table-responsive">
+                            <table class="table table-custom" id="eventsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Event Type</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Assigned To</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="eventsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="loading-spinner">
+                                                <div class="spinner-border text-primary" role="status">
+                                                    <span class="visually-hidden">Loading events...</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Events pagination">
+                            <ul class="pagination justify-content-center" id="eventsPagination">
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <!-- Workflows Tab -->
+                    <div class="tab-pane fade" id="workflows" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-person-plus"></i> Onboarding Workflows
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">Initialize comprehensive onboarding process for new employees</p>
+                                        <button class="btn btn-primary-custom" onclick="showOnboardingModal()">
+                                            <i class="bi bi-play"></i> Start Onboarding
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-hourglass-split"></i> Probation Management
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">Track probation periods and schedule review milestones</p>
+                                        <button class="btn btn-primary-custom" onclick="showProbationModal()">
+                                            <i class="bi bi-play"></i> Start Probation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-star"></i> Performance Reviews
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">Schedule and manage performance review cycles</p>
+                                        <button class="btn btn-primary-custom" onclick="showPerformanceReviewModal()">
+                                            <i class="bi bi-calendar-plus"></i> Schedule Review
+                                        </button>
+                                        <button class="btn btn-outline-primary ms-2" onclick="createAnnualReviewCycle()">
+                                            <i class="bi bi-calendar-range"></i> Annual Cycle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-file-text"></i> Contract Management
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="text-muted">Monitor contract renewals and manage employment agreements</p>
+                                        <button class="btn btn-primary-custom" onclick="createContractRenewalReminders()">
+                                            <i class="bi bi-bell"></i> Create Reminders
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div class="tab-pane fade" id="reports" role="tabpanel">
+                        <div class="row">
+                            <!-- Lifecycle Statistics -->
+                            <div class="col-lg-8 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-graph-up"></i> Lifecycle Analytics
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="lifecycleChart" width="400" height="200"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary Statistics -->
+                            <div class="col-lg-4 mb-4">
+                                <div class="lifecycle-card">
+                                    <div class="card-header-custom">
+                                        <h5 class="mb-0">
+                                            <i class="bi bi-clipboard-data"></i> Summary
+                                        </h5>
+                                    </div>
+                                    <div class="card-body" id="summaryStatistics">
+                                        <div class="loading-spinner">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading statistics...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals will be included from separate files -->
+    <div id="modalContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:src="@{/js/employee-lifecycle.js}"></script>
+</body>
+</html>

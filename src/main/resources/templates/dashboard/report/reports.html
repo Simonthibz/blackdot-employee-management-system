@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Blackdot EMS</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{layout/admin-layout :: header}"></div>
+
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{layout/admin-layout :: sidebar('reports')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="mb-3">
+            <h2><i class="fas fa-chart-bar"></i> Reports & Analytics</h2>
+            <p>Generate reports and view analytics for employees and assessments</p>
+        </div>
+
+        <!-- Report Generation Cards -->
+        <div class="dashboard-grid">
+            <!-- Employee Reports -->
+            <div class="table-container p-3">
+                <h4><i class="fas fa-users"></i> Employee Reports</h4>
+                <p>Generate comprehensive employee reports with all active employees, their roles, and basic information.</p>
+                <div style="margin-top: 1rem;">
+                    <button onclick="generateEmployeeReport('pdf')" class="btn btn-success btn-sm" style="margin-right: 0.5rem;">
+                        <i class="fas fa-file-pdf"></i> PDF Report
+                    </button>
+                    <button onclick="generateEmployeeReport('excel')" class="btn btn-warning btn-sm">
+                        <i class="fas fa-file-excel"></i> Excel Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quarterly Assessment Reports -->
+            <div class="table-container p-3">
+                <h4><i class="fas fa-clipboard-list"></i> Assessment Reports</h4>
+                <p>Generate quarterly assessment reports with performance analytics.</p>
+                <div style="margin-top: 1rem;">
+                    <select id="quarterSelect" class="form-control" style="margin-bottom: 0.5rem;">
+                        <option value="Q1">Q1 - January to March</option>
+                        <option value="Q2">Q2 - April to June</option>
+                        <option value="Q3">Q3 - July to September</option>
+                        <option value="Q4" selected>Q4 - October to December</option>
+                    </select>
+                    <select id="yearSelect" class="form-control" style="margin-bottom: 1rem;">
+                        <option value="2025" selected>2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                    <button onclick="generateQuarterlyReport('pdf')" class="btn btn-success btn-sm" style="margin-right: 0.5rem;">
+                        <i class="fas fa-file-pdf"></i> PDF Report
+                    </button>
+                    <button onclick="generateQuarterlyReport('excel')" class="btn btn-warning btn-sm">
+                        <i class="fas fa-file-excel"></i> Excel Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Employee Assessment History -->
+            <div class="table-container p-3">
+                <h4><i class="fas fa-history"></i> Employee History</h4>
+                <p>Generate individual employee assessment history reports.</p>
+                <div style="margin-top: 1rem;">
+                    <input type="text" id="employeeIdInput" placeholder="Enter Employee ID" class="form-control" style="margin-bottom: 1rem;">
+                    <button onclick="generateEmployeeHistory('pdf')" class="btn btn-success btn-sm" style="margin-right: 0.5rem;">
+                        <i class="fas fa-file-pdf"></i> PDF Report
+                    </button>
+                    <button onclick="generateEmployeeHistory('excel')" class="btn btn-warning btn-sm">
+                        <i class="fas fa-file-excel"></i> Excel Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analytics Dashboard -->
+            <div class="table-container p-3">
+                <h4><i class="fas fa-analytics"></i> Live Analytics</h4>
+                <p>View real-time analytics for current quarter assessments.</p>
+                <div style="margin-top: 1rem;">
+                    <button onclick="loadAnalytics()" class="btn btn-success">
+                        <i class="fas fa-chart-line"></i> Load Analytics
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analyticsSection" style="display: none; margin-top: 2rem;">
+            <h3><i class="fas fa-chart-line"></i> Assessment Analytics</h3>
+            
+            <!-- Statistics Cards -->
+            <div class="dashboard-grid" id="analyticsStats">
+                <!-- Statistics will be loaded here -->
+            </div>
+
+            <!-- Charts -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                <div class="table-container p-3">
+                    <h4>Score Distribution</h4>
+                    <div style="position: relative; height: 250px;">
+                        <canvas id="scoreDistributionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="table-container p-3">
+                    <h4>Department Performance</h4>
+                    <div style="position: relative; height: 250px;">
+                        <canvas id="departmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Reports Table -->
+        <div class="table-container mt-3">
+            <div class="p-3">
+                <h4><i class="fas fa-clock"></i> Quick Actions</h4>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Report Type</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><i class="fas fa-users"></i> All Employees</td>
+                        <td>Complete employee list with roles and status</td>
+                        <td>
+                            <button onclick="generateEmployeeReport('pdf')" class="btn btn-sm btn-success">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-clipboard-list"></i> Current Quarter</td>
+                        <td>Assessment results for Q4 2025</td>
+                        <td>
+                            <button onclick="generateCurrentQuarterReport()" class="btn btn-sm btn-success">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-chart-bar"></i> Analytics Dashboard</td>
+                        <td>Real-time performance metrics and charts</td>
+                        <td>
+                            <button onclick="loadAnalytics()" class="btn btn-sm btn-warning">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        async function generateEmployeeReport(format) {
+            try {
+                showNotification('Generating employee report...', 'info');
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/reports/employees?format=${format}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `employee-report.${format === 'pdf' ? 'pdf' : 'xls'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showNotification('Employee report generated successfully!', 'success');
+                } else {
+                    showNotification('Failed to generate employee report', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error generating report', 'error');
+            }
+        }
+
+        async function generateQuarterlyReport(format) {
+            const quarter = document.getElementById('quarterSelect').value;
+            const year = document.getElementById('yearSelect').value;
+
+            try {
+                showNotification('Generating quarterly assessment report...', 'info');
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/reports/assessments/quarterly?quarter=${quarter}&year=${year}&format=${format}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `assessment-report-${quarter}-${year}.${format === 'pdf' ? 'pdf' : 'xls'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showNotification('Assessment report generated successfully!', 'success');
+                } else {
+                    showNotification('Failed to generate assessment report', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error generating report', 'error');
+            }
+        }
+
+        async function generateEmployeeHistory(format) {
+            const employeeId = document.getElementById('employeeIdInput').value;
+            if (!employeeId) {
+                showNotification('Please enter an Employee ID', 'warning');
+                return;
+            }
+
+            try {
+                showNotification('Generating employee assessment history...', 'info');
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/reports/employees/${employeeId}/assessments?format=${format}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `employee-history-${employeeId}.${format === 'pdf' ? 'pdf' : 'xls'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    showNotification('Employee history report generated successfully!', 'success');
+                } else {
+                    showNotification('Failed to generate employee history report', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error generating report', 'error');
+            }
+        }
+
+        function generateCurrentQuarterReport() {
+            document.getElementById('quarterSelect').value = 'Q4';
+            document.getElementById('yearSelect').value = '2025';
+            generateQuarterlyReport('pdf');
+        }
+
+        async function loadAnalytics() {
+            const quarter = 'Q4'; // Current quarter
+            const year = 2025;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/reports/analytics/assessments?quarter=${quarter}&year=${year}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const analytics = await response.json();
+                    displayAnalytics(analytics);
+                    document.getElementById('analyticsSection').style.display = 'block';
+                    showNotification('Analytics loaded successfully!', 'success');
+                } else {
+                    showNotification('Failed to load analytics', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Network error loading analytics', 'error');
+            }
+        }
+
+        function displayAnalytics(analytics) {
+            // Display statistics cards
+            const statsContainer = document.getElementById('analyticsStats');
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <h3>${analytics.totalAttempts}</h3>
+                    <p><i class="fas fa-clipboard-list"></i> Total Attempts</p>
+                </div>
+                <div class="stat-card success">
+                    <h3>${analytics.passedAttempts}</h3>
+                    <p><i class="fas fa-check-circle"></i> Passed</p>
+                </div>
+                <div class="stat-card danger">
+                    <h3>${analytics.failedAttempts}</h3>
+                    <p><i class="fas fa-times-circle"></i> Failed</p>
+                </div>
+                <div class="stat-card">
+                    <h3>${analytics.averageScore}%</h3>
+                    <p><i class="fas fa-percent"></i> Average Score</p>
+                </div>
+            `;
+
+            // Score distribution chart
+            const scoreCtx = document.getElementById('scoreDistributionChart').getContext('2d');
+            const scoreChart = new Chart(scoreCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(analytics.scoreDistribution),
+                    datasets: [{
+                        label: 'Number of Students',
+                        data: Object.values(analytics.scoreDistribution),
+                        backgroundColor: [
+                            '#27ae60', '#2ecc71', '#f39c12', '#e67e22', '#e74c3c'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Department performance chart
+            const deptCtx = document.getElementById('departmentChart').getContext('2d');
+            const deptChart = new Chart(deptCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(analytics.departmentPerformance),
+                    datasets: [{
+                        data: Object.values(analytics.departmentPerformance),
+                        backgroundColor: [
+                            '#3498db', '#9b59b6', '#1abc9c', '#f39c12', '#e74c3c'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 4px;
+                color: white;
+                font-weight: 500;
+                z-index: 3000;
+                background-color: ${type === 'success' ? '#27ae60' : 
+                                   type === 'warning' ? '#f39c12' : 
+                                   type === 'error' ? '#e74c3c' : '#3498db'};
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+    </script>
+
+    <!-- Common Scripts -->
+    <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
+</body>
+</html>

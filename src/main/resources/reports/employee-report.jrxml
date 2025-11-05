@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="employee-report" pageWidth="842" pageHeight="595" orientation="Landscape"
+              columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+
+    <parameter name="reportTitle" class="java.lang.String"/>
+    <parameter name="generatedDate" class="java.time.LocalDateTime"/>
+    <parameter name="totalEmployees" class="java.lang.Integer"/>
+
+    <field name="employeeId" class="java.lang.String"/>
+    <field name="firstName" class="java.lang.String"/>
+    <field name="lastName" class="java.lang.String"/>
+    <field name="username" class="java.lang.String"/>
+    <field name="email" class="java.lang.String"/>
+    <field name="department" class="java.lang.String"/>
+    <field name="position" class="java.lang.String"/>
+    <field name="roles" class="java.lang.String"/>
+    <field name="isActive" class="java.lang.Boolean"/>
+
+    <title>
+        <band height="60">
+            <staticText>
+                <reportElement x="0" y="0" width="400" height="30"/>
+                <textElement>
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Blackdot Employee Management System]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="0" y="30" width="300" height="20"/>
+                <textElement>
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{reportTitle}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="500" y="30" width="200" height="20"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA["Generated: " + $P{generatedDate}.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <pageHeader>
+        <band height="30">
+            <textField>
+                <reportElement x="0" y="0" width="200" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Total Employees: " + $P{totalEmployees}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageHeader>
+
+    <columnHeader>
+        <band height="30">
+            <rectangle>
+                <reportElement x="0" y="0" width="802" height="25" backcolor="#E6E6E6"/>
+            </rectangle>
+            <staticText>
+                <reportElement x="5" y="5" width="60" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Employee ID]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="70" y="5" width="100" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Name]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="175" y="5" width="80" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Username]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="260" y="5" width="120" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Email]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="385" y="5" width="80" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Department]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="470" y="5" width="80" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Position]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="555" y="5" width="100" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Roles]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="660" y="5" width="50" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Status]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="25">
+            <rectangle>
+                <reportElement x="0" y="0" width="802" height="20" forecolor="#CCCCCC"/>
+                <graphicElement>
+                    <pen lineWidth="0.5"/>
+                </graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement x="5" y="2" width="60" height="18"/>
+                <textFieldExpression><![CDATA[$F{employeeId}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="70" y="2" width="100" height="18"/>
+                <textFieldExpression><![CDATA[$F{firstName} + " " + $F{lastName}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="175" y="2" width="80" height="18"/>
+                <textFieldExpression><![CDATA[$F{username}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="260" y="2" width="120" height="18"/>
+                <textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="385" y="2" width="80" height="18"/>
+                <textFieldExpression><![CDATA[$F{department}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="470" y="2" width="80" height="18"/>
+                <textFieldExpression><![CDATA[$F{position}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="555" y="2" width="100" height="18"/>
+                <textFieldExpression><![CDATA[$F{roles}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="660" y="2" width="50" height="18"/>
+                <textFieldExpression><![CDATA[$F{isActive} ? "Active" : "Inactive"]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="30">
+            <textField>
+                <reportElement x="0" y="10" width="100" height="15"/>
+                <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="700" y="10" width="100" height="15"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA["Blackdot EMS"]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

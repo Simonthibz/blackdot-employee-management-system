@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="employee-assessment-history" pageWidth="595" pageHeight="842"
+              columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+
+    <parameter name="reportTitle" class="java.lang.String"/>
+    <parameter name="generatedDate" class="java.time.LocalDateTime"/>
+    <parameter name="employeeId" class="java.lang.String"/>
+    <parameter name="employeeName" class="java.lang.String"/>
+    <parameter name="department" class="java.lang.String"/>
+    <parameter name="position" class="java.lang.String"/>
+    <parameter name="totalAttempts" class="java.lang.Long"/>
+    <parameter name="passedAttempts" class="java.lang.Long"/>
+    <parameter name="failedAttempts" class="java.lang.Long"/>
+    <parameter name="passRate" class="java.lang.Double"/>
+    <parameter name="averageScore" class="java.lang.Double"/>
+
+    <field name="assessmentTitle" class="java.lang.String"/>
+    <field name="quarter" class="com.blackdot.ems.shared.entity.Quarter"/>
+    <field name="year" class="java.lang.Integer"/>
+    <field name="score" class="java.lang.Integer"/>
+    <field name="totalQuestions" class="java.lang.Integer"/>
+    <field name="correctAnswers" class="java.lang.Integer"/>
+    <field name="timeTaken" class="java.lang.Integer"/>
+    <field name="passed" class="java.lang.Boolean"/>
+    <field name="completedAt" class="java.time.LocalDateTime"/>
+
+    <title>
+        <band height="150">
+            <staticText>
+                <reportElement x="0" y="0" width="400" height="30"/>
+                <textElement>
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Blackdot Employee Management System]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="0" y="30" width="400" height="20"/>
+                <textElement>
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{reportTitle}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="400" y="30" width="155" height="20"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA["Generated: " + $P{generatedDate}.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))]]></textFieldExpression>
+            </textField>
+            
+            <!-- Employee Information -->
+            <rectangle>
+                <reportElement x="0" y="60" width="555" height="60" backcolor="#F8F8F8"/>
+            </rectangle>
+            <staticText>
+                <reportElement x="10" y="70" width="100" height="15"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Employee Information]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="10" y="90" width="200" height="15"/>
+                <textFieldExpression><![CDATA["Employee ID: " + $P{employeeId}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="220" y="90" width="200" height="15"/>
+                <textFieldExpression><![CDATA["Department: " + $P{department}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="10" y="105" width="200" height="15"/>
+                <textFieldExpression><![CDATA["Position: " + $P{position}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Summary Statistics -->
+            <rectangle>
+                <reportElement x="0" y="125" width="555" height="20" backcolor="#E6E6E6"/>
+            </rectangle>
+            <textField>
+                <reportElement x="10" y="128" width="100" height="15"/>
+                <textElement>
+                    <font size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Total: " + $P{totalAttempts}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="120" y="128" width="100" height="15"/>
+                <textElement>
+                    <font size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Passed: " + $P{passedAttempts}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="230" y="128" width="100" height="15"/>
+                <textElement>
+                    <font size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Failed: " + $P{failedAttempts}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="340" y="128" width="100" height="15"/>
+                <textElement>
+                    <font size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Pass Rate: " + $P{passRate} + "%"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="450" y="128" width="100" height="15"/>
+                <textElement>
+                    <font size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Avg Score: " + $P{averageScore} + "%"]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <columnHeader>
+        <band height="30">
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="25" backcolor="#E6E6E6"/>
+            </rectangle>
+            <staticText>
+                <reportElement x="5" y="5" width="140" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Assessment]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="150" y="5" width="60" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Quarter]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="215" y="5" width="50" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Score]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="270" y="5" width="60" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Correct/Total]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="335" y="5" width="50" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Time]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="390" y="5" width="45" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Status]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="440" y="5" width="110" height="20"/>
+                <textElement>
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Completed]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <detail>
+        <band height="20">
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="18" forecolor="#CCCCCC"/>
+                <graphicElement>
+                    <pen lineWidth="0.5"/>
+                </graphicElement>
+            </rectangle>
+            <textField isBlankWhenNull="true">
+                <reportElement x="5" y="2" width="140" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{assessmentTitle}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="150" y="2" width="60" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{quarter} + " " + $F{year}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="215" y="2" width="50" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{score} + "%"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="270" y="2" width="60" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{correctAnswers} + "/" + $F{totalQuestions}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="335" y="2" width="50" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{timeTaken} + "m"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="390" y="2" width="45" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{passed} ? "PASS" : "FAIL"]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement x="440" y="2" width="110" height="16"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{completedAt} != null ? $F{completedAt}.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")) : "Incomplete"]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="30">
+            <textField>
+                <reportElement x="0" y="10" width="100" height="15"/>
+                <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="450" y="10" width="100" height="15"/>
+                <textElement textAlignment="Right"/>
+                <textFieldExpression><![CDATA["Blackdot EMS"]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

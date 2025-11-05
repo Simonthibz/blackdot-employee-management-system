@@ -1,0 +1,80 @@
+package com.blackdot.ems.module.authentication.controller;
+
+import com.blackdot.ems.shared.dto.MessageResponse;
+import com.blackdot.ems.module.authentication.dto.JwtResponse;
+import com.blackdot.ems.module.authentication.dto.LoginRequest;
+import com.blackdot.ems.shared.util.JwtUtils;
+import com.blackdot.ems.shared.util.UserDetailsImpl;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+    @Autowired
+    AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtUtils jwtUtils;
+
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse(jwt,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                userDetails.getFirstName(),
+                userDetails.getLastName(),
+                userDetails.getEmployeeId(),
+                roles));
+    }
+
+    @PostMapping("/signout")
+    public ResponseEntity<?> logoutUser() {
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(new MessageResponse("User logged out successfully!"));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.ok(new MessageResponse("No authenticated user"));
+        }
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new JwtResponse("",
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                userDetails.getFirstName(),
+                userDetails.getLastName(),
+                userDetails.getEmployeeId(),
+                roles));
+    }
+}

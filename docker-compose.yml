@@ -1,0 +1,110 @@
+# Docker Compose for Blackdot Employee Management System
+# ======================================================
+
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: blackdot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: blackdot_ems
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-admin123}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    networks:
+      - blackdot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blackdot_ems"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Application Server
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blackdot-ems-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DATABASE_URL: jdbc:postgresql://postgres:5432/blackdot_ems
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-admin123}
+
+      # Application Configuration
+      SPRING_PROFILES_ACTIVE: production
+      SERVER_PORT: 8080
+
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-blackdotSecretKey2025!@#$%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+
+      # Performance Tuning
+      JVM_OPTS: "-Xms512m -Xmx1024m -XX:+UseG1GC -XX:+UseContainerSupport"
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Database Pool
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-20}
+      DB_MIN_IDLE: ${DB_MIN_IDLE:-5}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - app_logs:/app/logs
+    networks:
+      - blackdot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: blackdot-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - app
+    networks:
+      - blackdot-network
+    profiles:
+      - with-nginx
+
+# Persistent Volumes
+volumes:
+  postgres_data:
+    driver: local
+  app_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+
+# Network Configuration
+networks:
+  blackdot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

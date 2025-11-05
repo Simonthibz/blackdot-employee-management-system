@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Blackdot EMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+        .main-content {
+            min-height: 100vh;
+        }
+        .dashboard-card {
+            transition: transform 0.3s;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar text-white">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4>Blackdot EMS</h4>
+                        <div id="userInfo" class="small"></div>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#" onclick="showSection('overview')">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#" onclick="showSection('employees')">
+                                <i class="fas fa-users me-2"></i>Employees
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#" onclick="showSection('assessments')">
+                                <i class="fas fa-clipboard-check me-2"></i>Assessments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="#" onclick="showSection('reports')">
+                                <i class="fas fa-chart-bar me-2"></i>Reports
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link text-white" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2" id="pageTitle">Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div id="userProfile" class="btn-group me-2"></div>
+                    </div>
+                </div>
+
+                <!-- Overview Section -->
+                <div id="overview" class="content-section">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card dashboard-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                    <h5>Total Employees</h5>
+                                    <h3 class="text-primary">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card dashboard-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-clipboard-check fa-2x text-success mb-2"></i>
+                                    <h5>Assessments Due</h5>
+                                    <h3 class="text-success">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card dashboard-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                                    <h5>Completion Rate</h5>
+                                    <h3 class="text-warning">--%</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card dashboard-card border-0 shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                                    <h5>Overdue</h5>
+                                    <h3 class="text-danger">--</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Recent Activity</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">No recent activity to display.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Quick Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" onclick="testAPI('admin')">Test Admin API</button>
+                                        <button class="btn btn-success" onclick="testAPI('hr')">Test HR API</button>
+                                        <button class="btn btn-info" onclick="testAPI('datacapturer')">Test Data Capturer API</button>
+                                        <button class="btn btn-warning" onclick="testAPI('user')">Test User API</button>
+                                        <button class="btn btn-secondary" onclick="testAPI('employee-api')">Test Employee API</button>
+                                        <button class="btn btn-outline-primary" onclick="loadEmployeeStats()">Load Employee Stats</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections (hidden by default) -->
+                <div id="employees" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Employee Management</h3>
+                        <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                            <i class="fas fa-plus me-2"></i>Add Employee
+                        </button>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="searchEmployees" placeholder="Search employees..." onkeyup="searchEmployees()">
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-control" id="roleFilter" onchange="filterByRole()">
+                                <option value="">All Roles</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="HR">HR</option>
+                                <option value="DATA_CAPTURER">Data Capturer</option>
+                                <option value="SUPERVISOR">Supervisor</option>
+                                <option value="EMPLOYEE">Employee</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary" onclick="loadEmployees()">
+                                <i class="fas fa-refresh me-2"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="employeesList">
+                                <div class="text-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p>Loading employees...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="assessments" class="content-section" style="display: none;">
+                    <h3>Assessment Management</h3>
+                    <p>Assessment management functionality will be implemented in the next phase.</p>
+                </div>
+
+                <div id="reports" class="content-section" style="display: none;">
+                    <h3>Reports & Analytics</h3>
+                    <p>Reporting functionality will be implemented in the next phase.</p>
+                </div>
+
+                <!-- API Test Results -->
+                <div id="apiResults" class="mt-4" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>API Test Results</h5>
+                        </div>
+                        <div class="card-body">
+                            <pre id="apiOutput" class="bg-light p-3 rounded"></pre>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Display user info
+            document.getElementById('userInfo').textContent = `${user.firstName || ''} ${user.lastName || ''}`;
+            document.getElementById('userProfile').innerHTML = `
+                <span class="badge bg-secondary">${user.roles ? user.roles.join(', ') : ''}</span>
+            `;
+        });
+
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.style.display = 'none');
+            
+            // Show selected section
+            document.getElementById(sectionName).style.display = 'block';
+            
+            // Update page title
+            const titles = {
+                'overview': 'Dashboard',
+                'employees': 'Employee Management',
+                'assessments': 'Assessment Management',
+                'reports': 'Reports & Analytics'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionName] || 'Dashboard';
+            
+            // Load data for specific sections
+            if (sectionName === 'employees') {
+                loadEmployees();
+            }
+        }
+
+        async function loadEmployees() {
+            const token = localStorage.getItem('token');
+            const employeesList = document.getElementById('employeesList');
+            
+            try {
+                const response = await fetch('/api/employees/active', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const employees = await response.json();
+                    displayEmployees(employees);
+                } else {
+                    employeesList.innerHTML = '<p class="text-danger">Failed to load employees. Check your permissions.</p>';
+                }
+            } catch (error) {
+                employeesList.innerHTML = '<p class="text-danger">Error loading employees: ' + error.message + '</p>';
+            }
+        }
+
+        function displayEmployees(employees) {
+            const employeesList = document.getElementById('employeesList');
+            
+            if (employees.length === 0) {
+                employeesList.innerHTML = '<p class="text-muted">No employees found.</p>';
+                return;
+            }
+            
+            let html = '<div class="table-responsive"><table class="table table-striped">';
+            html += '<thead><tr><th>Employee ID</th><th>Name</th><th>Email</th><th>Roles</th><th>Status</th><th>Hire Date</th><th>Actions</th></tr></thead>';
+            html += '<tbody>';
+            
+            employees.forEach(emp => {
+                const roles = emp.roles ? emp.roles.join(', ') : '';
+                const status = emp.isActive ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+                const hireDate = emp.hireDate ? new Date(emp.hireDate).toLocaleDateString() : '-';
+                
+                html += `<tr>
+                    <td>${emp.employeeId}</td>
+                    <td>${emp.firstName} ${emp.lastName}</td>
+                    <td>${emp.email}</td>
+                    <td><small>${roles}</small></td>
+                    <td>${status}</td>
+                    <td>${hireDate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewEmployee(${emp.id})">View</button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="editEmployee(${emp.id})">Edit</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            employeesList.innerHTML = html;
+        }
+
+        async function searchEmployees() {
+            const searchTerm = document.getElementById('searchEmployees').value.trim();
+            if (searchTerm.length < 2) {
+                loadEmployees();
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`/api/employees/search?q=${encodeURIComponent(searchTerm)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const employees = await response.json();
+                    displayEmployees(employees);
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        async function filterByRole() {
+            const role = document.getElementById('roleFilter').value;
+            if (!role) {
+                loadEmployees();
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch(`/api/employees/role/${role}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const employees = await response.json();
+                    displayEmployees(employees);
+                }
+            } catch (error) {
+                console.error('Filter error:', error);
+            }
+        }
+
+        async function loadEmployeeStats() {
+            const token = localStorage.getItem('token');
+            const apiResults = document.getElementById('apiResults');
+            const apiOutput = document.getElementById('apiOutput');
+            
+            try {
+                const response = await fetch('/api/employees/statistics', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    apiOutput.textContent = JSON.stringify(stats, null, 2);
+                    apiResults.style.display = 'block';
+                } else {
+                    apiOutput.textContent = `Error: ${response.status} - ${await response.text()}`;
+                    apiResults.style.display = 'block';
+                }
+            } catch (error) {
+                apiOutput.textContent = `Error: ${error.message}`;
+                apiResults.style.display = 'block';
+            }
+        }
+
+        function showAddEmployeeModal() {
+            alert('Add Employee modal will be implemented in the next phase.');
+        }
+
+        function viewEmployee(id) {
+            alert(`View employee details for ID: ${id} - Will be implemented in the next phase.`);
+        }
+
+        function editEmployee(id) {
+            alert(`Edit employee for ID: ${id} - Will be implemented in the next phase.`);
+        }
+
+        async function testAPI(endpoint) {
+            const token = localStorage.getItem('token');
+            const apiResults = document.getElementById('apiResults');
+            const apiOutput = document.getElementById('apiOutput');
+            
+            try {
+                const response = await fetch(`/api/test/${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.text();
+                apiOutput.textContent = `Status: ${response.status}\nResponse: ${data}`;
+                apiResults.style.display = 'block';
+            } catch (error) {
+                apiOutput.textContent = `Error: ${error.message}`;
+                apiResults.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

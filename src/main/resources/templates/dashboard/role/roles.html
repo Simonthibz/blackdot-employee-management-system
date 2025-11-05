@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Management - Blackdot EMS</title>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{layout/admin-layout :: header}"></div>
+
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{layout/admin-layout :: sidebar('roles')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="mb-3">
+            <h2><i class="fas fa-user-shield"></i> Role Management</h2>
+            <p>Manage user roles and permissions</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mb-3" th:if="${canManageRoles}">
+            <button onclick="showCreateRoleModal()" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Custom Role
+            </button>
+            <button onclick="loadAllRoles()" class="btn">
+                <i class="fas fa-list"></i> All Roles
+            </button>
+            <button onclick="loadSystemRoles()" class="btn">
+                <i class="fas fa-shield-alt"></i> System Roles
+            </button>
+            <button onclick="loadCustomRoles()" class="btn">
+                <i class="fas fa-user-cog"></i> Custom Roles
+            </button>
+        </div>
+
+        <!-- Roles Table -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Display Name</th>
+                        <th>System Name</th>
+                        <th>Type</th>
+                        <th>Users</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="rolesTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center">Loading roles...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Create/Edit Role Modal -->
+    <div id="roleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create Role</h3>
+                <button class="close" onclick="closeRoleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="roleForm" onsubmit="saveRole(event)">
+                    <input type="hidden" id="roleId">
+                    <input type="hidden" id="isSystemRole">
+                    
+                    <div class="form-group">
+                        <label for="displayName">Display Name <span class="text-danger">*</span></label>
+                        <input type="text" id="displayName" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="permissions">Permissions (comma-separated)</label>
+                        <textarea id="permissions" class="form-control" rows="3" 
+                                  placeholder="e.g., READ_EMPLOYEE,UPDATE_EMPLOYEE,DELETE_EMPLOYEE"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Priority (higher number = higher priority)</label>
+                        <input type="number" id="priority" class="form-control" min="1" max="100">
+                    </div>
+
+                    <div class="form-group" id="statusGroup" style="display: none;">
+                        <label for="isActive">Status</label>
+                        <select id="isActive" class="form-control">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Role
+                        </button>
+                        <button type="button" class="btn ml-2" onclick="closeRoleModal()">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Role Modal -->
+    <div id="viewRoleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Role Details</h3>
+                <button class="close" onclick="closeViewRoleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Display Name:</label>
+                    <p id="viewDisplayName"></p>
+                </div>
+                <div class="form-group">
+                    <label>System Name:</label>
+                    <p id="viewName"></p>
+                </div>
+                <div class="form-group">
+                    <label>Type:</label>
+                    <p id="viewType"></p>
+                </div>
+                <div class="form-group">
+                    <label>Description:</label>
+                    <p id="viewDescription"></p>
+                </div>
+                <div class="form-group">
+                    <label>Permissions:</label>
+                    <p id="viewPermissions"></p>
+                </div>
+                <div class="form-group">
+                    <label>Priority:</label>
+                    <p id="viewPriority"></p>
+                </div>
+                <div class="form-group">
+                    <label>User Count:</label>
+                    <p id="viewUserCount"></p>
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <p id="viewStatus"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Common Scripts -->
+    <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
+    
+    <!-- Page Specific Scripts -->
+    <script th:src="@{/js/roles.js}"></script>
+</body>
+</html>
