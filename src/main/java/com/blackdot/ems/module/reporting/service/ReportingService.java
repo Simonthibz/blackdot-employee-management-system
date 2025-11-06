@@ -3,6 +3,7 @@ package com.blackdot.ems.module.reporting.service;
 import com.blackdot.ems.module.assessment.repository.AssessmentRepository;
 import com.blackdot.ems.module.assessment.repository.AssessmentResultRepository;
 import com.blackdot.ems.module.employee.repository.UserRepository;
+import com.blackdot.ems.module.task.repository.TaskRepository;
 import com.blackdot.ems.shared.entity.*;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
@@ -33,6 +34,9 @@ public class ReportingService {
 
     @Autowired
     private AssessmentResultRepository assessmentResultRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
 
     public byte[] generateEmployeeReport(String format) throws Exception {
         List<User> employees = userRepository.findByIsActiveTrue();
@@ -102,22 +106,33 @@ public class ReportingService {
         return generateReport("quarterly-assessment-report.jrxml", reportData, parameters, format);
     }
 
-    public byte[] generateEmployeeAssessmentHistory(Long employeeId, String format) throws Exception {
-        User employee = userRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+    public byte[] generateEmployeeAssessmentHistory(String employeeId, String format) throws Exception {
+        // Try to find by employee ID string first (e.g., "EMP005")
+        User employee = userRepository.findByEmployeeId(employeeId).orElse(null);
         
-        List<AssessmentResult> results = assessmentResultRepository.findByUserIdOrderByCreatedAtDesc(employeeId);
+        if (employee == null) {
+            // Try to parse as numeric database ID and find by ID
+            try {
+                Long numericId = Long.parseLong(employeeId);
+                employee = userRepository.findById(numericId)
+                        .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Employee not found with ID: " + employeeId);
+            }
+        }
+        
+        List<AssessmentResult> results = assessmentResultRepository.findByUserIdOrderByCreatedAtDesc(employee.getId());
         
         List<Map<String, Object>> reportData = results.stream().map(result -> {
             Map<String, Object> row = new HashMap<>();
             row.put("assessmentTitle", result.getAssessment().getTitle());
-            row.put("quarter", result.getQuarter());
-            row.put("year", result.getYear());
+            row.put("quarter", result.getQuarter() != null ? result.getQuarter().name() : "N/A");
+            row.put("year", result.getYear() != null ? result.getYear() : 0);
             row.put("score", result.getScore());
             row.put("totalQuestions", result.getTotalQuestions());
             row.put("correctAnswers", result.getCorrectAnswers());
             row.put("timeTaken", result.getTimeTakenMinutes());
-            row.put("passed", result.getPassed());
+            row.put("passed", result.getPassed() ? "Yes" : "No");
             row.put("startedAt", result.getStartedAt());
             row.put("completedAt", result.getCompletedAt());
             return row;
@@ -127,15 +142,19 @@ public class ReportingService {
         long totalAttempts = results.size();
         long passedAttempts = results.stream().filter(AssessmentResult::getPassed).count();
         double passRate = totalAttempts > 0 ? (double) passedAttempts / totalAttempts * 100 : 0;
-        double averageScore = results.stream().mapToInt(AssessmentResult::getScore).average().orElse(0);
+        double averageScore = results.stream()
+                .filter(r -> r.getScore() != null)
+                .mapToInt(AssessmentResult::getScore)
+                .average()
+                .orElse(0);
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("reportTitle", "Assessment History - " + employee.getFirstName() + " " + employee.getLastName());
         parameters.put("generatedDate", LocalDateTime.now());
         parameters.put("employeeId", employee.getEmployeeId());
         parameters.put("employeeName", employee.getFirstName() + " " + employee.getLastName());
-        parameters.put("department", employee.getDepartment());
-        parameters.put("position", employee.getPosition());
+        parameters.put("department", employee.getDepartment() != null ? employee.getDepartment() : "N/A");
+        parameters.put("position", employee.getPosition() != null ? employee.getPosition() : "N/A");
         parameters.put("totalAttempts", totalAttempts);
         parameters.put("passedAttempts", passedAttempts);
         parameters.put("failedAttempts", totalAttempts - passedAttempts);
@@ -188,6 +207,141 @@ public class ReportingService {
                         Collectors.averagingInt(AssessmentResult::getScore)
                 ));
         analytics.put("assessmentPerformance", assessmentPerformance);
+        
+        return analytics;
+    }
+
+    public byte[] generateTaskReport(String format) throws Exception {
+        List<Task> tasks = taskRepository.findAll();
+        
+        List<Map<String, Object>> reportData = tasks.stream().map(task -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("title", task.getTitle());
+            row.put("description", task.getDescription());
+            row.put("assignedToName", task.getAssignedTo() != null ? 
+                    task.getAssignedTo().getFirstName() + " " + task.getAssignedTo().getLastName() : "Unassigned");
+            row.put("assignedByName", task.getAssignedBy() != null ? 
+                    task.getAssignedBy().getFirstName() + " " + task.getAssignedBy().getLastName() : "N/A");
+            row.put("priority", task.getPriority().name());
+            row.put("status", task.getStatus().name());
+            row.put("dueDate", task.getDueDate() != null ? task.getDueDate().toLocalDate() : null);
+            row.put("createdAt", task.getCreatedAt());
+            return row;
+        }).collect(Collectors.toList());
+
+        // Calculate statistics
+        long totalTasks = tasks.size();
+        long completedTasks = tasks.stream().filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
+        long inProgressTasks = tasks.stream().filter(t -> t.getStatus() == TaskStatus.IN_PROGRESS).count();
+        long pendingTasks = tasks.stream().filter(t -> t.getStatus() == TaskStatus.PENDING).count();
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("reportTitle", "Task Report - All Tasks");
+        parameters.put("generatedDate", LocalDateTime.now());
+        parameters.put("totalTasks", totalTasks);
+        parameters.put("completedTasks", completedTasks);
+        parameters.put("inProgressTasks", inProgressTasks);
+        parameters.put("pendingTasks", pendingTasks);
+
+        return generateReport("task-report.jrxml", reportData, parameters, format);
+    }
+
+    public byte[] generateEmployeeTaskHistory(String employeeId, String format) throws Exception {
+        // Try to find by employee ID string first (e.g., "EMP005")
+        User employee = userRepository.findByEmployeeId(employeeId).orElse(null);
+        
+        if (employee == null) {
+            // Try to parse as numeric database ID and find by ID
+            try {
+                Long numericId = Long.parseLong(employeeId);
+                employee = userRepository.findById(numericId)
+                        .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Employee not found with ID: " + employeeId);
+            }
+        }
+        
+        List<Task> tasks = taskRepository.findByAssignedTo(employee);
+        
+        List<Map<String, Object>> reportData = tasks.stream().map(task -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("title", task.getTitle());
+            row.put("description", task.getDescription());
+            row.put("assignedByName", task.getAssignedBy() != null ? 
+                    task.getAssignedBy().getFirstName() + " " + task.getAssignedBy().getLastName() : "N/A");
+            row.put("priority", task.getPriority().name());
+            row.put("status", task.getStatus().name());
+            row.put("dueDate", task.getDueDate() != null ? task.getDueDate().toLocalDate() : null);
+            row.put("completedAt", task.getCompletedAt());
+            row.put("createdAt", task.getCreatedAt());
+            return row;
+        }).collect(Collectors.toList());
+
+        // Calculate employee task statistics
+        long totalTasks = tasks.size();
+        long completedTasks = tasks.stream().filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
+        long inProgressTasks = tasks.stream().filter(t -> t.getStatus() == TaskStatus.IN_PROGRESS).count();
+        long pendingTasks = tasks.stream().filter(t -> t.getStatus() == TaskStatus.PENDING).count();
+        double completionRate = totalTasks > 0 ? (double) completedTasks / totalTasks * 100 : 0;
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("reportTitle", "Task History - " + employee.getFirstName() + " " + employee.getLastName());
+        parameters.put("generatedDate", LocalDateTime.now());
+        parameters.put("employeeId", employee.getEmployeeId());
+        parameters.put("employeeName", employee.getFirstName() + " " + employee.getLastName());
+        parameters.put("department", employee.getDepartment() != null ? employee.getDepartment() : "N/A");
+        parameters.put("position", employee.getPosition() != null ? employee.getPosition() : "N/A");
+        parameters.put("totalTasks", totalTasks);
+        parameters.put("completedTasks", completedTasks);
+        parameters.put("inProgressTasks", inProgressTasks);
+        parameters.put("pendingTasks", pendingTasks);
+        parameters.put("completionRate", Math.round(completionRate * 100.0) / 100.0);
+
+        return generateReport("employee-task-history.jrxml", reportData, parameters, format);
+    }
+
+    public Map<String, Object> getTaskAnalytics() {
+        List<Task> allTasks = taskRepository.findAll();
+        
+        Map<String, Object> analytics = new HashMap<>();
+        
+        // Basic statistics
+        long totalTasks = allTasks.size();
+        long completedTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.COMPLETED).count();
+        long inProgressTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.IN_PROGRESS).count();
+        long pendingTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.PENDING).count();
+        double completionRate = totalTasks > 0 ? (double) completedTasks / totalTasks * 100 : 0;
+        
+        analytics.put("totalTasks", totalTasks);
+        analytics.put("completedTasks", completedTasks);
+        analytics.put("inProgressTasks", inProgressTasks);
+        analytics.put("pendingTasks", pendingTasks);
+        analytics.put("completionRate", Math.round(completionRate * 100.0) / 100.0);
+        
+        // Priority distribution
+        Map<String, Long> priorityDistribution = allTasks.stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.getPriority().name(),
+                        Collectors.counting()
+                ));
+        analytics.put("priorityDistribution", priorityDistribution);
+        
+        // Status distribution
+        Map<String, Long> statusDistribution = allTasks.stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.getStatus().name(),
+                        Collectors.counting()
+                ));
+        analytics.put("statusDistribution", statusDistribution);
+        
+        // Department task distribution
+        Map<String, Long> departmentDistribution = allTasks.stream()
+                .filter(t -> t.getAssignedTo() != null && t.getAssignedTo().getDepartment() != null)
+                .collect(Collectors.groupingBy(
+                        t -> t.getAssignedTo().getDepartment(),
+                        Collectors.counting()
+                ));
+        analytics.put("departmentDistribution", departmentDistribution);
         
         return analytics;
     }

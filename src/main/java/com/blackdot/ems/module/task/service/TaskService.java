@@ -173,18 +173,11 @@ public class TaskService {
             }
         }
         
-        // Set assigned to user info
-        if (task.getAssignedTo() != null) {
-            response.setAssignedToId(task.getAssignedTo().getId());
-            response.setAssignedToName(task.getAssignedTo().getFirstName() + " " + task.getAssignedTo().getLastName());
-            response.setAssignedToEmail(task.getAssignedTo().getEmail());
-            
-            // Set assigned user's department
-            if (task.getAssignedTo().getDepartmentEntity() != null) {
-                response.setAssignedToDepartment(task.getAssignedTo().getDepartmentEntity().getName());
-            } else if (task.getAssignedTo().getDepartment() != null) {
-                response.setAssignedToDepartment(task.getAssignedTo().getDepartment());
-            }
+        // Set assigned by user info
+        if (task.getAssignedBy() != null) {
+            response.setAssignedById(task.getAssignedBy().getId());
+            response.setAssignedByName(task.getAssignedBy().getFirstName() + " " + task.getAssignedBy().getLastName());
+            response.setAssignedByEmail(task.getAssignedBy().getEmail());
         }
         
         // Set department info

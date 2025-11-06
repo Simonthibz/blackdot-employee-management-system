@@ -75,7 +75,7 @@ public class ReportingController {
     @GetMapping("/employees/{employeeId}/assessments")
     @PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
     public ResponseEntity<byte[]> generateEmployeeAssessmentHistory(
-            @PathVariable Long employeeId,
+            @PathVariable String employeeId,
             @RequestParam(defaultValue = "pdf") String format) {
         try {
             byte[] reportBytes = reportingService.generateEmployeeAssessmentHistory(employeeId, format);
@@ -94,7 +94,9 @@ public class ReportingController {
             
             return new ResponseEntity<>(reportBytes, headers, HttpStatus.OK);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace(); // Log the error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error generating report: " + e.getMessage()).getBytes());
         }
     }
 
@@ -107,6 +109,71 @@ public class ReportingController {
             Map<String, Object> analytics = reportingService.getAssessmentAnalytics(quarter, year);
             return ResponseEntity.ok(analytics);
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/tasks")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
+    public ResponseEntity<byte[]> generateTaskReport(@RequestParam(defaultValue = "pdf") String format) {
+        try {
+            byte[] reportBytes = reportingService.generateTaskReport(format);
+            
+            HttpHeaders headers = new HttpHeaders();
+            String fileName = "task-report-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            
+            if ("pdf".equalsIgnoreCase(format)) {
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDispositionFormData("attachment", fileName + ".pdf");
+            } else if ("excel".equalsIgnoreCase(format) || "xls".equalsIgnoreCase(format)) {
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                headers.setContentDispositionFormData("attachment", fileName + ".xls");
+            }
+            
+            return new ResponseEntity<>(reportBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error generating report: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @GetMapping("/employees/{employeeId}/tasks")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
+    public ResponseEntity<byte[]> generateEmployeeTaskHistory(
+            @PathVariable String employeeId,
+            @RequestParam(defaultValue = "pdf") String format) {
+        try {
+            byte[] reportBytes = reportingService.generateEmployeeTaskHistory(employeeId, format);
+            
+            HttpHeaders headers = new HttpHeaders();
+            String fileName = "employee-task-history-" + employeeId + "-" + 
+                             LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+            
+            if ("pdf".equalsIgnoreCase(format)) {
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDispositionFormData("attachment", fileName + ".pdf");
+            } else if ("excel".equalsIgnoreCase(format) || "xls".equalsIgnoreCase(format)) {
+                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+                headers.setContentDispositionFormData("attachment", fileName + ".xls");
+            }
+            
+            return new ResponseEntity<>(reportBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error generating report: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @GetMapping("/analytics/tasks")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('HR')")
+    public ResponseEntity<Map<String, Object>> getTaskAnalytics() {
+        try {
+            Map<String, Object> analytics = reportingService.getTaskAnalytics();
+            return ResponseEntity.ok(analytics);
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
