@@ -152,17 +152,29 @@
                         </div>
                         
                         <div class="circular-stat">
-                            <div class="score-display">
-                                <div class="score-number" th:text="${stats.quarterlyPassed}">0</div>
-                                <div class="score-label">Passed</div>
+                            <div class="circular-progress">
+                                <svg class="circular-chart" viewBox="0 0 36 36">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="circle success-circle" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="circular-text-overlay">
+                                    <div class="circular-percentage" th:text="${stats.quarterlyPassed}">0</div>
+                                </div>
                             </div>
+                            <span class="circular-label">Passed</span>
                         </div>
                         
                         <div class="circular-stat">
-                            <div class="score-display">
-                                <div class="score-number warning-text" th:text="${stats.quarterlyFailed}">0</div>
-                                <div class="score-label">Failed</div>
+                            <div class="circular-progress">
+                                <svg class="circular-chart" viewBox="0 0 36 36">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="circle danger-circle" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="circular-text-overlay">
+                                    <div class="circular-percentage" th:text="${stats.quarterlyFailed}">0</div>
+                                </div>
                             </div>
+                            <span class="circular-label">Failed</span>
                         </div>
                     </div>
                     
@@ -233,6 +245,36 @@
                                 <div class="task-stat-label">Completed</div>
                             </div>
                         </div>
+                        
+                        <div class="task-stat-item">
+                            <div class="task-stat-icon on-hold">
+                                <i class="fas fa-pause"></i>
+                            </div>
+                            <div class="task-stat-details">
+                                <div class="task-stat-value" th:text="${stats.onHoldTasks}">0</div>
+                                <div class="task-stat-label">On Hold</div>
+                            </div>
+                        </div>
+                        
+                        <div class="task-stat-item">
+                            <div class="task-stat-icon cancelled">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                            <div class="task-stat-details">
+                                <div class="task-stat-value" th:text="${stats.cancelledTasks}">0</div>
+                                <div class="task-stat-label">Cancelled</div>
+                            </div>
+                        </div>
+                        
+                        <div class="task-stat-item">
+                            <div class="task-stat-icon overdue">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="task-stat-details">
+                                <div class="task-stat-value" th:text="${stats.overdueTasks}">0</div>
+                                <div class="task-stat-label">Overdue</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Overdue Alert -->
@@ -286,10 +328,33 @@
             
             <div class="chart-card">
                 <div class="card-header-clean">
-                    <h3 class="card-title-clean">
-                        <i class="fas fa-chart-bar"></i> Task Distribution
-                    </h3>
-                    <span class="card-subtitle-clean">By Status</span>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div>
+                            <h3 class="card-title-clean">
+                                <i class="fas fa-chart-bar"></i> Task Distribution
+                            </h3>
+                            <span class="card-subtitle-clean">By Status</span>
+                        </div>
+                        <div class="action-menu">
+                            <button class="action-menu-btn" onclick="toggleTaskFilterMenu(event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="action-menu-dropdown" id="taskFilterMenu">
+                                <a href="javascript:void(0)" onclick="filterTaskChart('all')">
+                                    <i class="fas fa-list"></i> All Tasks
+                                </a>
+                                <a href="javascript:void(0)" onclick="filterTaskChart('today')">
+                                    <i class="fas fa-calendar-day"></i> Due Today
+                                </a>
+                                <a href="javascript:void(0)" onclick="filterTaskChart('week')">
+                                    <i class="fas fa-calendar-week"></i> Due This Week
+                                </a>
+                                <a href="javascript:void(0)" onclick="filterTaskChart('month')">
+                                    <i class="fas fa-calendar"></i> Due This Month
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="chart-body">
                     <canvas id="taskChart"></canvas>
@@ -526,6 +591,17 @@
     <div th:replace="~{layout/admin-layout :: common-scripts}"></div>
 
     <script th:inline="javascript">
+        // Global variables for charts
+        let taskChartInstance = null;
+        let allTaskData = {
+            pending: /*[[${stats.pendingTasks}]]*/ 0,
+            inProgress: /*[[${stats.inProgressTasks}]]*/ 0,
+            completed: /*[[${stats.completedTasks}]]*/ 0,
+            onHold: /*[[${stats.onHoldTasks}]]*/ 0,
+            cancelled: /*[[${stats.cancelledTasks}]]*/ 0,
+            overdue: /*[[${stats.overdueTasks}]]*/ 0
+        };
+        
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing charts...');
             
@@ -542,16 +618,8 @@
                 /*[[${stats.incompleteAssessments}]]*/ 0
             ];
             
-            // Task data - using Thymeleaf inline JavaScript
-            const taskData = [
-                /*[[${stats.pendingTasks}]]*/ 0, 
-                /*[[${stats.inProgressTasks}]]*/ 0, 
-                /*[[${stats.completedTasks}]]*/ 0, 
-                /*[[${stats.overdueTasks}]]*/ 0
-            ];
-            
             console.log('Assessment data:', assessmentData);
-            console.log('Task data:', taskData);
+            console.log('Task data:', allTaskData);
             
             // Check if assessment has any data
             const hasAssessmentData = assessmentData.some(val => val > 0);
@@ -559,17 +627,36 @@
                 document.getElementById('assessmentChart').style.display = 'none';
                 document.getElementById('assessmentNoData').style.display = 'block';
             } else {
-                // Assessment Performance Doughnut Chart
+                // Create gradient backgrounds for Assessment Chart - Bootstrap Professional Colors
                 const assessmentCtx = document.getElementById('assessmentChart').getContext('2d');
+                
+                // Success gradient (Passed) - Professional Green
+                const successGradient = assessmentCtx.createLinearGradient(0, 0, 0, 400);
+                successGradient.addColorStop(0, '#27ae60');
+                successGradient.addColorStop(1, '#229954');
+                
+                // Danger gradient (Failed) - Professional Red
+                const dangerGradient = assessmentCtx.createLinearGradient(0, 0, 0, 400);
+                dangerGradient.addColorStop(0, '#e74c3c');
+                dangerGradient.addColorStop(1, '#c0392b');
+                
+                // Warning gradient (Pending) - Professional Orange
+                const warningGradient = assessmentCtx.createLinearGradient(0, 0, 0, 400);
+                warningGradient.addColorStop(0, '#f39c12');
+                warningGradient.addColorStop(1, '#e67e22');
+                
+                // Assessment Performance Doughnut Chart
                 const assessmentChart = new Chart(assessmentCtx, {
                     type: 'doughnut',
                     data: {
                         labels: ['Passed', 'Failed', 'Pending'],
                         datasets: [{
                             data: assessmentData,
-                            backgroundColor: ['#27ae60', '#e74c3c', '#f39c12'],
-                            borderWidth: 2,
-                            borderColor: '#fff'
+                            backgroundColor: [successGradient, dangerGradient, warningGradient],
+                            borderWidth: 3,
+                            borderColor: '#fff',
+                            hoverBorderWidth: 4,
+                            hoverBorderColor: '#fff'
                         }]
                     },
                     options: {
@@ -579,11 +666,28 @@
                             legend: {
                                 position: 'bottom',
                                 labels: {
-                                    padding: 10,
+                                    padding: 15,
                                     font: {
-                                        size: 11
-                                    }
+                                        size: 12,
+                                        weight: '600'
+                                    },
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
                                 }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(44, 62, 80, 0.95)',
+                                padding: 12,
+                                borderColor: 'rgba(255, 255, 255, 0.2)',
+                                borderWidth: 1,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                cornerRadius: 8
                             }
                         }
                     }
@@ -591,65 +695,202 @@
                 console.log('Assessment chart created');
             }
             
-            // Check if task has any data
+            // Initialize task chart with all data
+            initTaskChart('all');
+            
+            console.log('Charts initialized. Assessment data exists:', hasAssessmentData);
+        });
+        
+        // Function to initialize/update task chart
+        function initTaskChart(filter) {
+            const taskData = [
+                allTaskData.pending,
+                allTaskData.inProgress,
+                allTaskData.completed,
+                allTaskData.onHold,
+                allTaskData.cancelled,
+                allTaskData.overdue
+            ];
+            
             const hasTaskData = taskData.some(val => val > 0);
             if (!hasTaskData) {
                 document.getElementById('taskChart').style.display = 'none';
                 document.getElementById('taskNoData').style.display = 'block';
-            } else {
-                // Task Status Bar Chart
-                const taskCtx = document.getElementById('taskChart').getContext('2d');
-                const taskChart = new Chart(taskCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Pending', 'In Progress', 'Completed', 'Overdue'],
-                        datasets: [{
-                            label: 'Tasks',
-                            data: taskData,
-                            backgroundColor: ['#f39c12', '#3498db', '#27ae60', '#e74c3c'],
-                            borderWidth: 0,
-                            borderRadius: 4
-                        }]
+                return;
+            }
+            
+            document.getElementById('taskChart').style.display = 'block';
+            document.getElementById('taskNoData').style.display = 'none';
+            
+            const taskCtx = document.getElementById('taskChart').getContext('2d');
+            
+            // Create gradient backgrounds for Task Chart - Bootstrap Professional Colors
+            // Pending gradient (Warning) - Professional Orange
+            const pendingGradient = taskCtx.createLinearGradient(0, 0, 0, 400);
+            pendingGradient.addColorStop(0, '#f39c12');
+            pendingGradient.addColorStop(1, '#e67e22');
+            
+            // In Progress gradient (Info) - Professional Blue
+            const progressGradient = taskCtx.createLinearGradient(0, 0, 0, 400);
+            progressGradient.addColorStop(0, '#3498db');
+            progressGradient.addColorStop(1, '#2980b9');
+            
+            // Completed gradient (Success) - Professional Green
+            const completedGradient = taskCtx.createLinearGradient(0, 0, 0, 400);
+            completedGradient.addColorStop(0, '#27ae60');
+            completedGradient.addColorStop(1, '#229954');
+            
+            // On Hold gradient - Professional Purple
+            const onHoldGradient = taskCtx.createLinearGradient(0, 0, 0, 400);
+            onHoldGradient.addColorStop(0, '#9b59b6');
+            onHoldGradient.addColorStop(1, '#8e44ad');
+            
+            // Cancelled gradient - Professional Gray
+            const cancelledGradient = taskCtx.createLinearGradient(0, 0, 0, 400);
+            cancelledGradient.addColorStop(0, '#6c757d');
+            cancelledGradient.addColorStop(1, '#5a6268');
+            
+            // Overdue gradient (Danger) - Professional Red
+            const overdueGradient = taskCtx.createLinearGradient(0, 0, 0, 400);
+            overdueGradient.addColorStop(0, '#e74c3c');
+            overdueGradient.addColorStop(1, '#c0392b');
+            
+            // Destroy existing chart if it exists
+            if (taskChartInstance) {
+                taskChartInstance.destroy();
+            }
+            
+            // Task Status Bar Chart
+            taskChartInstance = new Chart(taskCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled', 'Overdue'],
+                    datasets: [{
+                        label: 'Tasks',
+                        data: taskData,
+                        backgroundColor: [pendingGradient, progressGradient, completedGradient, onHoldGradient, cancelledGradient, overdueGradient],
+                        borderWidth: 0,
+                        borderRadius: 8,
+                        hoverBackgroundColor: [pendingGradient, progressGradient, completedGradient, onHoldGradient, cancelledGradient, overdueGradient]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(44, 62, 80, 0.95)',
+                            padding: 12,
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            cornerRadius: 8
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                },
+                                color: '#6c757d'
+                            },
+                            grid: {
+                                display: true,
+                                drawBorder: false,
+                                color: 'rgba(0, 0, 0, 0.05)'
                             }
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    font: {
-                                        size: 11
-                                    }
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: '600'
                                 },
-                                grid: {
-                                    display: true,
-                                    drawBorder: false
-                                }
+                                color: '#6c757d'
                             },
-                            x: {
-                                ticks: {
-                                    font: {
-                                        size: 11
-                                    }
-                                },
-                                grid: {
-                                    display: false
-                                }
+                            grid: {
+                                display: false
                             }
                         }
                     }
-                });
-                console.log('Task chart created');
+                }
+            });
+            console.log('Task chart created with filter:', filter);
+        }
+        
+        // Function to filter task chart
+        function filterTaskChart(range) {
+            // Close the dropdown menu
+            const menu = document.getElementById('taskFilterMenu');
+            if (menu) {
+                menu.classList.remove('active');
             }
             
-            console.log('Charts initialized. Assessment data exists:', hasAssessmentData, 'Task data exists:', hasTaskData);
+            if (range === 'all') {
+                // Show all tasks - use the current stats
+                initTaskChart('all');
+            } else {
+                // Fetch filtered data from backend
+                fetch(`/api/tasks/by-date-range?range=${range}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    }
+                })
+                .then(response => response.json())
+                .then(tasks => {
+                    // Count tasks by status
+                    const filteredData = {
+                        pending: tasks.filter(t => t.status === 'PENDING').length,
+                        inProgress: tasks.filter(t => t.status === 'IN_PROGRESS').length,
+                        completed: tasks.filter(t => t.status === 'COMPLETED').length,
+                        onHold: tasks.filter(t => t.status === 'ON_HOLD').length,
+                        cancelled: tasks.filter(t => t.status === 'CANCELLED').length,
+                        overdue: 0 // Overdue is calculated separately
+                    };
+                    
+                    // Update global data temporarily
+                    const originalData = {...allTaskData};
+                    allTaskData = filteredData;
+                    
+                    // Reinitialize chart
+                    initTaskChart(range);
+                    
+                    // Restore original data
+                    allTaskData = originalData;
+                })
+                .catch(error => {
+                    console.error('Error filtering tasks:', error);
+                });
+            }
+        }
+        
+        // Function to toggle task filter menu
+        function toggleTaskFilterMenu(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('taskFilterMenu');
+            menu.classList.toggle('active');
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('taskFilterMenu');
+            if (menu && menu.classList.contains('active')) {
+                menu.classList.remove('active');
+            }
         });
     </script>
 </body>

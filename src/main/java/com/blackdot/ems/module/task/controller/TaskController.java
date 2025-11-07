@@ -120,6 +120,25 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
     
+    // Get tasks by date range - Day/Week/Month filtering
+    @GetMapping("/by-date-range")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR') or hasRole('HR')")
+    public ResponseEntity<List<TaskResponse>> getTasksByDateRange(
+            @RequestParam String range) {
+        List<TaskResponse> tasks = taskService.getTasksByDateRange(range);
+        return ResponseEntity.ok(tasks);
+    }
+    
+    // Get my tasks by date range - For regular users
+    @GetMapping("/my-tasks/by-date-range")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<TaskResponse>> getMyTasksByDateRange(
+            @RequestParam String range,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        List<TaskResponse> tasks = taskService.getMyTasksByDateRange(currentUser.getId(), range);
+        return ResponseEntity.ok(tasks);
+    }
+    
     // Update task status - Assigned user can update their task status
     @PatchMapping("/{id}/status")
     @PreAuthorize("isAuthenticated()")

@@ -85,11 +85,15 @@ public class DashboardService {
         List<Task> pendingTasks = taskRepository.findByStatus(TaskStatus.PENDING);
         List<Task> inProgressTasks = taskRepository.findByStatus(TaskStatus.IN_PROGRESS);
         List<Task> completedTasks = taskRepository.findByStatus(TaskStatus.COMPLETED);
+        List<Task> cancelledTasks = taskRepository.findByStatus(TaskStatus.CANCELLED);
+        List<Task> onHoldTasks = taskRepository.findByStatus(TaskStatus.ON_HOLD);
         List<Task> overdueTasks = taskRepository.findOverdueTasks(LocalDateTime.now());
         
         stats.put("pendingTasks", pendingTasks.size());
         stats.put("inProgressTasks", inProgressTasks.size());
         stats.put("completedTasks", completedTasks.size());
+        stats.put("cancelledTasks", cancelledTasks.size());
+        stats.put("onHoldTasks", onHoldTasks.size());
         stats.put("overdueTasks", overdueTasks.size());
         
         // Calculate task completion rate

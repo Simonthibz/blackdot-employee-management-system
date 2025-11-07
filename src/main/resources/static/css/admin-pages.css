@@ -25,6 +25,29 @@ body {
     overflow-x: hidden;
 }
 
+/* Typography - Paragraphs */
+p {
+    font-size: 0.875rem; /* 14px - matches design guide */
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    color: #6c757d;
+}
+
+.card-body p,
+.card p {
+    margin-bottom: 0.5rem;
+}
+
+.card-body p:last-child,
+.card p:last-child {
+    margin-bottom: 0;
+}
+
+.text-muted {
+    color: #6c757d !important;
+    font-size: 0.85rem;
+}
+
 /* ===========================
    HEADER (Top Navigation Bar)
    =========================== */
@@ -59,7 +82,7 @@ body {
     background: linear-gradient(145deg, #2c3e50, #1a252f);
     color: white;
     cursor: pointer;
-    display: flex;
+    display: none; /* Hidden on desktop */
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
@@ -78,10 +101,11 @@ body {
 }
 
 .header-logo {
-    width: 40px;
+    width: 50px; /* Wider for rectangular logo */
     height: 40px;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    object-fit: contain; /* Maintain aspect ratio */
 }
 
 .header-title {
@@ -204,6 +228,193 @@ body {
     height: 1px;
     background: rgba(0, 0, 0, 0.05);
     margin: 0.5rem 0;
+}
+
+/* Notifications */
+.header-notifications {
+    position: relative;
+}
+
+.notification-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #6c757d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    font-size: 1.1rem;
+}
+
+.notification-btn:hover {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 360px;
+    max-height: 480px;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    z-index: 1001;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification-dropdown.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: linear-gradient(145deg, rgba(44, 62, 80, 0.03), rgba(26, 37, 47, 0.05));
+}
+
+.notification-header h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark-text);
+    margin: 0;
+}
+
+.mark-all-read {
+    font-size: 0.75rem;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.mark-all-read:hover {
+    color: #2980b9;
+}
+
+.notification-list {
+    max-height: 360px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    background: linear-gradient(90deg, rgba(44, 62, 80, 0.03), rgba(26, 37, 47, 0.05));
+    transform: translateX(2px);
+}
+
+.notification-item.unread {
+    background: linear-gradient(90deg, rgba(52, 152, 219, 0.04), rgba(41, 128, 185, 0.06));
+}
+
+.notification-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.notification-icon.blue {
+    background: linear-gradient(145deg, #3498db, #2980b9);
+}
+
+.notification-icon.orange {
+    background: linear-gradient(145deg, #f39c12, #e67e22);
+}
+
+.notification-icon.green {
+    background: linear-gradient(145deg, #27ae60, #229954);
+}
+
+.notification-icon.red {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
+}
+
+.notification-icon.purple {
+    background: linear-gradient(145deg, #9b59b6, #8e44ad);
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark-text);
+    margin-bottom: 0.25rem;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.notification-footer {
+    padding: 0.875rem 1.25rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+    background: linear-gradient(145deg, rgba(44, 62, 80, 0.02), rgba(26, 37, 47, 0.04));
+}
+
+.notification-footer a {
+    font-size: 0.8rem;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.notification-footer a:hover {
+    color: #2980b9;
 }
 
 /* ===========================
@@ -831,6 +1042,18 @@ body {
 
 .task-stat-icon.completed {
     background: linear-gradient(145deg, #27ae60, #229954);
+}
+
+.task-stat-icon.on-hold {
+    background: linear-gradient(145deg, #9b59b6, #8e44ad);
+}
+
+.task-stat-icon.cancelled {
+    background: linear-gradient(145deg, #6c757d, #5a6268);
+}
+
+.task-stat-icon.overdue {
+    background: linear-gradient(145deg, #e74c3c, #c0392b);
 }
 
 .task-stat-details {
@@ -1774,12 +1997,37 @@ body {
    =========================== */
 .table-responsive {
     width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+/* Custom scrollbar for table */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, #2c3e50, #1a252f);
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(145deg, #1a252f, #0d1318);
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.8rem;
+    min-width: 800px; /* Minimum width to trigger horizontal scroll */
 }
 
 .table thead th {
@@ -1943,6 +2191,29 @@ body {
     box-shadow: 0 3px 8px rgba(44, 62, 80, 0.3);
 }
 
+/* Action menu button for chart headers */
+.action-menu-btn {
+    background: none;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.action-menu-btn:hover {
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    color: var(--dark-text);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
 .action-dropdown {
     display: none;
     position: absolute;
@@ -1961,6 +2232,61 @@ body {
 
 .action-dropdown.show {
     display: block;
+}
+
+/* Action menu dropdown for chart headers */
+.action-menu-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(10px);
+    min-width: 180px;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.action-menu-dropdown.active {
+    display: block;
+}
+
+.action-menu-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--dark-text);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.action-menu-dropdown a:last-child {
+    border-bottom: none;
+}
+
+.action-menu-dropdown a:hover {
+    background: linear-gradient(90deg, rgba(44, 62, 80, 0.05), rgba(26, 37, 47, 0.08));
+    transform: translateX(3px);
+}
+
+.action-menu-dropdown a i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--primary-color);
 }
 
 .action-item {
@@ -2372,6 +2698,11 @@ body {
 
 /* Tablet and below - Collapse sidebar */
 @media (max-width: 992px) {
+    /* Show sidebar toggle button on tablets and mobile */
+    .sidebar-toggle {
+        display: flex;
+    }
+    
     .sidebar {
         transform: translateX(-100%);
     }
@@ -2382,6 +2713,16 @@ body {
 
     .main-content {
         margin-left: 0;
+    }
+    
+    .header-right {
+        gap: 0.5rem;
+    }
+    
+    .notification-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
     }
     
     .page-header {
@@ -2427,6 +2768,13 @@ body {
     .user-details {
         display: none;
     }
+    
+    .notification-dropdown {
+        width: calc(100vw - 2rem);
+        max-width: 340px;
+        right: 0;
+        left: auto;
+    }
 
     .main-content {
         padding: 1rem;
@@ -2452,6 +2800,24 @@ body {
         width: 80%;
         max-width: 280px;
     }
+    
+    .notification-dropdown {
+        width: calc(100vw - 2rem);
+        right: -120px;
+        max-width: 340px;
+    }
+    
+    .notification-header {
+        padding: 0.875rem 1rem;
+    }
+    
+    .notification-item {
+        padding: 0.875rem 1rem;
+    }
+    
+    .notification-footer {
+        padding: 0.75rem 1rem;
+    }
 
     .main-content {
         padding: 0.75rem;
@@ -2472,6 +2838,38 @@ body {
     
     .modal-body {
         padding: 1rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 400px) {
+    .notification-dropdown {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        max-height: calc(100vh - var(--header-height));
+    }
+    
+    .notification-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .notification-badge {
+        top: 4px;
+        right: 4px;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.35rem;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
     }
 }
 

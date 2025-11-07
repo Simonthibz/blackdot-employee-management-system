@@ -94,6 +94,44 @@ function loadOverdueTasks() {
     });
 }
 
+// Load tasks by date range (for admins/supervisors)
+function loadTasksByDateRange(range) {
+    currentView = 'date-range-' + range;
+    fetch(`/api/tasks/by-date-range?range=${range}`, {
+        headers: getHeaders()
+    })
+    .then(response => response.json())
+    .then(tasks => {
+        allTasks = tasks;
+        displayTasks(tasks);
+        const rangeText = range.charAt(0).toUpperCase() + range.slice(1);
+        showNotification(`Showing tasks due ${rangeText === 'Today' ? 'today' : 'in the next ' + rangeText.toLowerCase()}`, 'success');
+    })
+    .catch(error => {
+        console.error('Error loading tasks by date range:', error);
+        showNotification('Failed to load tasks', 'error');
+    });
+}
+
+// Load my tasks by date range (for regular users)
+function loadMyTasksByDateRange(range) {
+    currentView = 'my-date-range-' + range;
+    fetch(`/api/tasks/my-tasks/by-date-range?range=${range}`, {
+        headers: getHeaders()
+    })
+    .then(response => response.json())
+    .then(tasks => {
+        allTasks = tasks;
+        displayTasks(tasks);
+        const rangeText = range.charAt(0).toUpperCase() + range.slice(1);
+        showNotification(`Showing your tasks due ${rangeText === 'Today' ? 'today' : 'in the next ' + rangeText.toLowerCase()}`, 'success');
+    })
+    .catch(error => {
+        console.error('Error loading my tasks by date range:', error);
+        showNotification('Failed to load tasks', 'error');
+    });
+}
+
 // Display tasks in table
 function displayTasks(tasks) {
     const tbody = document.getElementById('tasksTableBody');

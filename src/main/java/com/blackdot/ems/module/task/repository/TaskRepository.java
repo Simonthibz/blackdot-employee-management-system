@@ -44,4 +44,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     // Find all tasks created by a user
     @Query("SELECT t FROM Task t WHERE t.assignedBy.id = :userId ORDER BY t.createdAt DESC")
     List<Task> findTasksCreatedByUserId(@Param("userId") Long userId);
+    
+    // Find tasks by due date range
+    @Query("SELECT t FROM Task t WHERE t.dueDate BETWEEN :startDate AND :endDate ORDER BY t.dueDate ASC")
+    List<Task> findTasksByDueDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    
+    // Find my tasks by due date range
+    @Query("SELECT t FROM Task t WHERE t.assignedTo.id = :userId AND t.dueDate BETWEEN :startDate AND :endDate ORDER BY t.dueDate ASC")
+    List<Task> findMyTasksByDueDateBetween(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

@@ -146,6 +146,60 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
     
+    public List<TaskResponse> getTasksByDateRange(String range) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+        
+        switch (range.toLowerCase()) {
+            case "today":
+                startDate = now.toLocalDate().atStartOfDay();
+                endDate = now.toLocalDate().atTime(23, 59, 59);
+                break;
+            case "week":
+                startDate = now.toLocalDate().atStartOfDay();
+                endDate = now.plusDays(7).toLocalDate().atTime(23, 59, 59);
+                break;
+            case "month":
+                startDate = now.toLocalDate().atStartOfDay();
+                endDate = now.plusDays(30).toLocalDate().atTime(23, 59, 59);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid date range: " + range);
+        }
+        
+        return taskRepository.findTasksByDueDateBetween(startDate, endDate).stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public List<TaskResponse> getMyTasksByDateRange(Long userId, String range) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate;
+        LocalDateTime endDate;
+        
+        switch (range.toLowerCase()) {
+            case "today":
+                startDate = now.toLocalDate().atStartOfDay();
+                endDate = now.toLocalDate().atTime(23, 59, 59);
+                break;
+            case "week":
+                startDate = now.toLocalDate().atStartOfDay();
+                endDate = now.plusDays(7).toLocalDate().atTime(23, 59, 59);
+                break;
+            case "month":
+                startDate = now.toLocalDate().atStartOfDay();
+                endDate = now.plusDays(30).toLocalDate().atTime(23, 59, 59);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid date range: " + range);
+        }
+        
+        return taskRepository.findMyTasksByDueDateBetween(userId, startDate, endDate).stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
     private TaskResponse convertToResponse(Task task) {
         TaskResponse response = new TaskResponse();
         response.setId(task.getId());
