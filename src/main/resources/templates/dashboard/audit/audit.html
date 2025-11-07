@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audit Trail Dashboard - Blackdot EMS</title>
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/audit.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-pages.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -30,53 +29,6 @@
         <!-- Error Message -->
         <div th:if="${error}" class="alert alert-danger">
             <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
-        </div>
-
-        <!-- Audit Statistics Cards -->
-        <div class="card mb-3" th:if="${statistics}">
-            <div class="card-body">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <i class="fas fa-list"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3 th:text="${statistics.totalEvents}">0</h3>
-                            <p>Total Audit Events</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3 th:text="${statistics.highRiskEvents}">0</h3>
-                            <p>High Risk Events</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3 th:text="${statistics.securityIncidents}">0</h3>
-                            <p>Security Incidents</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <div class="stat-details">
-                            <h3 th:text="${statistics.gdprEvents}">0</h3>
-                            <p>GDPR Events</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Quick Actions -->
@@ -171,11 +123,11 @@
                         </span>
                     </div>
                     <div>
-                        <a th:if="${currentPage > 0}" th:href="@{/dashboard/audit(page=${currentPage - 1})}" class="btn btn-sm btn-secondary">
+                        <a th:if="${currentPage > 0}" th:href="@{/dashboard/audit(page=${currentPage - 1})}" class="btn btn-secondary">
                             <i class="fas fa-chevron-left"></i> Previous
                         </a>
                         <span style="margin: 0 1rem;" th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">Page info</span>
-                        <a th:if="${currentPage < totalPages - 1}" th:href="@{/dashboard/audit(page=${currentPage + 1})}" class="btn btn-sm btn-secondary">
+                        <a th:if="${currentPage < totalPages - 1}" th:href="@{/dashboard/audit(page=${currentPage + 1})}" class="btn btn-secondary">
                             Next <i class="fas fa-chevron-right"></i>
                         </a>
                     </div>

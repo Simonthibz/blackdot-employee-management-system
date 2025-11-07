@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Blackdot EMS</title>
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/reports.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-pages.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -38,10 +37,10 @@
                 <div class="card-body">
                     <p class="card-description">Generate comprehensive employee reports with all active employees, their roles, and basic information.</p>
                     <div class="btn-group">
-                        <button onclick="generateEmployeeReport('pdf')" class="btn btn-success btn-sm">
+                        <button onclick="generateEmployeeReport('pdf')" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> PDF Report
                         </button>
-                        <button onclick="generateEmployeeReport('excel')" class="btn btn-warning btn-sm">
+                        <button onclick="generateEmployeeReport('excel')" class="btn btn-warning">
                             <i class="fas fa-file-excel"></i> Excel Report
                         </button>
                     </div>
@@ -71,10 +70,10 @@
                         </select>
                     </div>
                     <div class="btn-group">
-                        <button onclick="generateQuarterlyReport('pdf')" class="btn btn-success btn-sm">
+                        <button onclick="generateQuarterlyReport('pdf')" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> PDF Report
                         </button>
-                        <button onclick="generateQuarterlyReport('excel')" class="btn btn-warning btn-sm">
+                        <button onclick="generateQuarterlyReport('excel')" class="btn btn-warning">
                             <i class="fas fa-file-excel"></i> Excel Report
                         </button>
                     </div>
@@ -92,10 +91,10 @@
                         <input type="text" id="employeeIdInput" placeholder="Enter Employee ID" class="form-control">
                     </div>
                     <div class="btn-group">
-                        <button onclick="generateEmployeeHistory('pdf')" class="btn btn-success btn-sm">
+                        <button onclick="generateEmployeeHistory('pdf')" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> PDF Report
                         </button>
-                        <button onclick="generateEmployeeHistory('excel')" class="btn btn-warning btn-sm">
+                        <button onclick="generateEmployeeHistory('excel')" class="btn btn-warning">
                             <i class="fas fa-file-excel"></i> Excel Report
                         </button>
                     </div>
@@ -110,10 +109,10 @@
                 <div class="card-body">
                     <p class="card-description">Generate comprehensive task reports with all tasks, status, and assignment information.</p>
                     <div class="btn-group">
-                        <button onclick="generateTaskReport('pdf')" class="btn btn-success btn-sm">
+                        <button onclick="generateTaskReport('pdf')" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> PDF Report
                         </button>
-                        <button onclick="generateTaskReport('excel')" class="btn btn-warning btn-sm">
+                        <button onclick="generateTaskReport('excel')" class="btn btn-warning">
                             <i class="fas fa-file-excel"></i> Excel Report
                         </button>
                     </div>
@@ -131,10 +130,10 @@
                         <input type="text" id="taskEmployeeIdInput" placeholder="Enter Employee ID" class="form-control">
                     </div>
                     <div class="btn-group">
-                        <button onclick="generateEmployeeTaskHistory('pdf')" class="btn btn-success btn-sm">
+                        <button onclick="generateEmployeeTaskHistory('pdf')" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> PDF Report
                         </button>
-                        <button onclick="generateEmployeeTaskHistory('excel')" class="btn btn-warning btn-sm">
+                        <button onclick="generateEmployeeTaskHistory('excel')" class="btn btn-warning">
                             <i class="fas fa-file-excel"></i> Excel Report
                         </button>
                     </div>
@@ -214,7 +213,7 @@
                             <td><i class="fas fa-users"></i> All Employees</td>
                             <td>Complete employee list with roles and status</td>
                             <td class="text-center">
-                                <button onclick="generateEmployeeReport('pdf')" class="btn btn-sm btn-success">
+                                <button onclick="generateEmployeeReport('pdf')" class="btn btn-success">
                                     <i class="fas fa-download"></i> PDF
                                 </button>
                             </td>
@@ -223,7 +222,7 @@
                             <td><i class="fas fa-clipboard-list"></i> Current Quarter</td>
                             <td>Assessment results for Q4 2025</td>
                             <td class="text-center">
-                                <button onclick="generateCurrentQuarterReport()" class="btn btn-sm btn-success">
+                                <button onclick="generateCurrentQuarterReport()" class="btn btn-success">
                                     <i class="fas fa-download"></i> PDF
                                 </button>
                             </td>
@@ -232,7 +231,7 @@
                             <td><i class="fas fa-chart-bar"></i> Analytics Dashboard</td>
                             <td>Real-time performance metrics and charts</td>
                             <td class="text-center">
-                                <button onclick="loadAnalytics()" class="btn btn-sm btn-warning">
+                                <button onclick="loadAnalytics()" class="btn btn-warning">
                                     <i class="fas fa-eye"></i> View
                                 </button>
                             </td>

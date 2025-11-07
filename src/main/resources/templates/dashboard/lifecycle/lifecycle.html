@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lifecycle Management Dashboard - Blackdot EMS</title>
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-pages.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -16,9 +16,14 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="mb-3">
-            <h2><i class="fas fa-tasks"></i> Employee Lifecycle Management System</h2>
-            <p>Comprehensive onboarding, performance management, and career progression tracking</p>
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-content">
+                <div>
+                    <h2 class="page-title">Employee Lifecycle Management</h2>
+                    <p class="page-subtitle">Comprehensive onboarding, performance management, and career progression tracking</p>
+                </div>
+            </div>
         </div>
 
         <!-- Error Message -->
@@ -26,290 +31,205 @@
             <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}"></span>
         </div>
 
-        <!-- Lifecycle Statistics Cards -->
-        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;" th:if="${statistics}">
-            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 2rem;" th:text="${statistics.totalEvents}">0</h3>
-                        <p style="margin: 0; opacity: 0.9;">Total Lifecycle Events</p>
-                    </div>
-                    <i class="fas fa-calendar-check" style="font-size: 2rem; opacity: 0.8;"></i>
-                </div>
-            </div>
-            
-            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 2rem;" th:text="${statistics.upcomingEvents}">0</h3>
-                        <p style="margin: 0; opacity: 0.9;">Upcoming Events</p>
-                    </div>
-                    <i class="fas fa-clock" style="font-size: 2rem; opacity: 0.8;"></i>
-                </div>
-            </div>
-            
-            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 2rem;" th:text="${statistics.overdueEvents}">0</h3>
-                        <p style="margin: 0; opacity: 0.9;">Overdue Events</p>
-                    </div>
-                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; opacity: 0.8;"></i>
-                </div>
-            </div>
-            
-            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 1.5rem; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 2rem;" th:text="${statistics.employeesOnProbation}">0</h3>
-                        <p style="margin: 0; opacity: 0.9;">Employees on Probation</p>
-                    </div>
-                    <i class="fas fa-user-clock" style="font-size: 2rem; opacity: 0.8;"></i>
-                </div>
-            </div>
-        </div>
-
         <!-- Quick Actions -->
-        <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-            <a th:href="@{/dashboard/lifecycle/onboarding}" class="btn btn-success">
-                <i class="fas fa-user-plus"></i> Onboarding Management
-            </a>
-            <a th:href="@{/dashboard/lifecycle/reviews}" class="btn btn-warning">
-                <i class="fas fa-star"></i> Performance Reviews
-            </a>
-            <a th:href="@{/dashboard/lifecycle/contracts}" class="btn btn-info">
-                <i class="fas fa-file-contract"></i> Contract Management
-            </a>
-            <a th:href="@{/dashboard/lifecycle/probation}" class="btn btn-danger">
-                <i class="fas fa-user-clock"></i> Probation Tracking
-            </a>
-            <a th:href="@{/dashboard/lifecycle/training}" class="btn btn-primary">
-                <i class="fas fa-graduation-cap"></i> Training & Development
-            </a>
-            <button onclick="scheduleNewEvent()" class="btn btn-secondary">
-                <i class="fas fa-plus"></i> Schedule Event
-            </button>
+        <div class="card mb-3">
+            <div class="card-body">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <a th:href="@{/dashboard/lifecycle/onboarding}" class="btn btn-success">
+                        <i class="fas fa-user-plus"></i> Onboarding Management
+                    </a>
+                    <a th:href="@{/dashboard/lifecycle/reviews}" class="btn btn-warning">
+                        <i class="fas fa-star"></i> Performance Reviews
+                    </a>
+                    <a th:href="@{/dashboard/lifecycle/contracts}" class="btn btn-info">
+                        <i class="fas fa-file-contract"></i> Contract Management
+                    </a>
+                    <a th:href="@{/dashboard/lifecycle/probation}" class="btn btn-danger">
+                        <i class="fas fa-user-clock"></i> Probation Tracking
+                    </a>
+                    <a th:href="@{/dashboard/lifecycle/training}" class="btn btn-primary">
+                        <i class="fas fa-graduation-cap"></i> Training & Development
+                    </a>
+                    <button onclick="scheduleNewEvent()" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i> Schedule Event
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Upcoming Events Section -->
-        <div class="row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-            <!-- Upcoming Events -->
-            <div class="card">
-                <h3><i class="fas fa-clock"></i> Upcoming Events</h3>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Event Type</th>
-                                <th>Due Date</th>
-                                <th>Priority</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:if="${upcomingEvents?.isEmpty()}" th:unless="${upcomingEvents}">
-                                <td colspan="5" class="text-center">
-                                    <i class="fas fa-info-circle"></i> No upcoming events
-                                </td>
-                            </tr>
-                            <tr th:each="event : ${upcomingEvents}" th:unless="${upcomingEvents?.isEmpty()}">
-                                <td>
-                                    <strong th:text="${event.employee?.firstName + ' ' + event.employee?.lastName}">Employee Name</strong><br>
-                                    <small th:text="${event.employee?.employeeId}" style="color: #6c757d;">EMP001</small>
-                                </td>
-                                <td>
-                                    <span class="lifecycle-event" th:text="${event.eventType}">Event Type</span>
-                                </td>
-                                <td th:text="${#temporals.format(event.dueDate, 'MMM dd, yyyy')}">Due Date</td>
-                                <td>
-                                    <span class="badge badge-warning" th:if="${event.isOverdue}">Overdue</span>
-                                    <span class="badge badge-info" th:unless="${event.isOverdue}">Upcoming</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm" th:onclick="'viewEventDetails(' + ${event.id} + ')'" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-success" th:onclick="'markCompleted(' + ${event.id} + ')'" title="Mark Completed">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-clock"></i> Upcoming Events</h3>
             </div>
-            
-            <!-- Overdue Events -->
-            <div class="card">
-                <h3><i class="fas fa-exclamation-triangle"></i> Overdue Events</h3>
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Event Type</th>
-                                <th>Due Date</th>
-                                <th>Days Overdue</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:if="${overdueEvents?.isEmpty()}" th:unless="${overdueEvents}">
-                                <td colspan="5" class="text-center">
-                                    <i class="fas fa-check-circle"></i> No overdue events
-                                </td>
-                            </tr>
-                            <tr th:each="event : ${overdueEvents}" th:unless="${overdueEvents?.isEmpty()}">
-                                <td>
-                                    <strong th:text="${event.employee?.firstName + ' ' + event.employee?.lastName}">Employee Name</strong><br>
-                                    <small th:text="${event.employee?.employeeId}" style="color: #6c757d;">EMP001</small>
-                                </td>
-                                <td>
-                                    <span class="lifecycle-event" th:text="${event.eventType}">Event Type</span>
-                                </td>
-                                <td th:text="${#temporals.format(event.dueDate, 'MMM dd, yyyy')}">Due Date</td>
-                                <td>
-                                    <span class="badge badge-danger" th:text="${event.daysOverdue + ' days'}">Days</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-warning" th:onclick="'escalateEvent(' + ${event.id} + ')'" title="Escalate">
-                                        <i class="fas fa-exclamation"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-success" th:onclick="'markCompleted(' + ${event.id} + ')'" title="Mark Completed">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Event Type</th>
+                            <th>Due Date</th>
+                            <th>Priority</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${upcomingEvents?.isEmpty()}" th:unless="${upcomingEvents}">
+                            <td colspan="5" class="text-center">
+                                <i class="fas fa-info-circle"></i> No upcoming events
+                            </td>
+                        </tr>
+                        <tr th:each="event : ${upcomingEvents}" th:unless="${upcomingEvents?.isEmpty()}">
+                            <td>
+                                <strong th:text="${event.employee?.firstName + ' ' + event.employee?.lastName}">Employee Name</strong><br>
+                                <small th:text="${event.employee?.employeeId}" style="color: #6c757d;">EMP001</small>
+                            </td>
+                            <td>
+                                <span class="lifecycle-event" th:text="${event.eventType}">Event Type</span>
+                            </td>
+                            <td th:text="${#temporals.format(event.dueDate, 'MMM dd, yyyy')}">Due Date</td>
+                            <td>
+                                <span class="badge badge-warning" th:if="${event.isOverdue}">Overdue</span>
+                                <span class="badge badge-info" th:unless="${event.isOverdue}">Upcoming</span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm" th:onclick="'viewEventDetails(' + ${event.id} + ')'" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success" th:onclick="'markCompleted(' + ${event.id} + ')'" title="Mark Completed">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Overdue Events -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> Overdue Events</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Event Type</th>
+                            <th>Due Date</th>
+                            <th>Days Overdue</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${overdueEvents?.isEmpty()}" th:unless="${overdueEvents}">
+                            <td colspan="5" class="text-center">
+                                <i class="fas fa-check-circle"></i> No overdue events
+                            </td>
+                        </tr>
+                        <tr th:each="event : ${overdueEvents}" th:unless="${overdueEvents?.isEmpty()}">
+                            <td>
+                                <strong th:text="${event.employee?.firstName + ' ' + event.employee?.lastName}">Employee Name</strong><br>
+                                <small th:text="${event.employee?.employeeId}" style="color: #6c757d;">EMP001</small>
+                            </td>
+                            <td>
+                                <span class="lifecycle-event" th:text="${event.eventType}">Event Type</span>
+                            </td>
+                            <td th:text="${#temporals.format(event.dueDate, 'MMM dd, yyyy')}">Due Date</td>
+                            <td>
+                                <span class="badge badge-danger" th:text="${event.daysOverdue + ' days'}">Days</span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-warning" th:onclick="'escalateEvent(' + ${event.id} + ')'" title="Escalate">
+                                    <i class="fas fa-exclamation"></i>
+                                </button>
+                                <button class="btn btn-sm btn-success" th:onclick="'markCompleted(' + ${event.id} + ')'" title="Mark Completed">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
         <!-- Recent Lifecycle Events -->
-        <div class="table-container">
-            <h3><i class="fas fa-calendar-alt"></i> Recent Lifecycle Events</h3>
-            <table class="table" id="lifecycleTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Employee</th>
-                        <th>Event Type</th>
-                        <th>Category</th>
-                        <th>Status</th>
-                        <th>Performed By</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${lifecycleEvents?.content?.isEmpty()}" th:unless="${lifecycleEvents?.content}">
-                        <td colspan="8" class="text-center">
-                            <i class="fas fa-info-circle"></i> No lifecycle events found
-                        </td>
-                    </tr>
-                    <tr th:each="event : ${lifecycleEvents?.content}" th:unless="${lifecycleEvents?.content?.isEmpty()}">
-                        <td th:text="${#temporals.format(event.eventDate, 'MMM dd, yyyy')}">Date</td>
-                        <td>
-                            <strong th:text="${event.employee?.firstName + ' ' + event.employee?.lastName}">Employee Name</strong><br>
-                            <small th:text="${event.employee?.employeeId}" style="color: #6c757d;">EMP001</small>
-                        </td>
-                        <td>
-                            <span class="lifecycle-event" th:text="${event.eventType}">Event Type</span>
-                        </td>
-                        <td th:text="${event.category}">Category</td>
-                        <td>
-                            <span class="badge" 
-                                  th:classappend="${event.status == 'COMPLETED' ? 'badge-success' : (event.status == 'OVERDUE' ? 'badge-danger' : (event.status == 'IN_PROGRESS' ? 'badge-warning' : 'badge-info'))}"
-                                  th:text="${event.status}">Status</span>
-                        </td>
-                        <td th:text="${event.performedBy?.firstName + ' ' + event.performedBy?.lastName}">Performed By</td>
-                        <td style="max-width: 200px; word-wrap: break-word;" th:text="${event.description}">Description</td>
-                        <td>
-                            <button class="btn btn-sm" th:onclick="'viewEventDetails(' + ${event.id} + ')'" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-primary" th:onclick="'viewTimeline(' + ${event.employee?.id} + ')'" title="View Timeline">
-                                <i class="fas fa-timeline"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div style="display: flex; justify-content: between; align-items: center; margin-top: 1rem;" th:if="${lifecycleEvents?.totalPages > 1}">
-            <div>
-                <span th:text="'Showing ' + (${currentPage} * 20 + 1) + ' - ' + (${currentPage} * 20 + ${lifecycleEvents?.numberOfElements}) + ' of ' + ${totalElements} + ' lifecycle events'">
-                    Showing lifecycle events
-                </span>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Recent Lifecycle Events</h3>
             </div>
-            <div>
-                <a th:if="${currentPage > 0}" th:href="@{/dashboard/lifecycle(page=${currentPage - 1})}" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-chevron-left"></i> Previous
-                </a>
-                <span style="margin: 0 1rem;" th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">Page info</span>
-                <a th:if="${currentPage < totalPages - 1}" th:href="@{/dashboard/lifecycle(page=${currentPage + 1})}" class="btn btn-sm btn-secondary">
-                    Next <i class="fas fa-chevron-right"></i>
-                </a>
+            <div class="table-responsive">
+                <table class="table" id="lifecycleTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Employee</th>
+                            <th>Event Type</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Performed By</th>
+                            <th>Description</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${lifecycleEvents?.content?.isEmpty()}" th:unless="${lifecycleEvents?.content}">
+                            <td colspan="8" class="text-center">
+                                <i class="fas fa-info-circle"></i> No lifecycle events found
+                            </td>
+                        </tr>
+                        <tr th:each="event : ${lifecycleEvents?.content}" th:unless="${lifecycleEvents?.content?.isEmpty()}">
+                            <td th:text="${#temporals.format(event.eventDate, 'MMM dd, yyyy')}">Date</td>
+                            <td>
+                                <strong th:text="${event.employee?.firstName + ' ' + event.employee?.lastName}">Employee Name</strong><br>
+                                <small th:text="${event.employee?.employeeId}" style="color: #6c757d;">EMP001</small>
+                            </td>
+                            <td>
+                                <span class="lifecycle-event" th:text="${event.eventType}">Event Type</span>
+                            </td>
+                            <td th:text="${event.category}">Category</td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${event.status == 'COMPLETED' ? 'badge-success' : (event.status == 'OVERDUE' ? 'badge-danger' : (event.status == 'IN_PROGRESS' ? 'badge-warning' : 'badge-info'))}"
+                                      th:text="${event.status}">Status</span>
+                            </td>
+                            <td th:text="${event.performedBy?.firstName + ' ' + event.performedBy?.lastName}">Performed By</td>
+                            <td style="max-width: 200px; word-wrap: break-word;" th:text="${event.description}">Description</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm" th:onclick="'viewEventDetails(' + ${event.id} + ')'" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-primary" th:onclick="'viewTimeline(' + ${event.employee?.id} + ')'" title="View Timeline">
+                                    <i class="fas fa-timeline"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="card-footer" th:if="${lifecycleEvents?.totalPages > 1}">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span th:text="'Showing ' + (${currentPage} * 20 + 1) + ' - ' + (${currentPage} * 20 + ${lifecycleEvents?.numberOfElements}) + ' of ' + ${totalElements} + ' lifecycle events'">
+                            Showing lifecycle events
+                        </span>
+                    </div>
+                    <div>
+                        <a th:if="${currentPage > 0}" th:href="@{/dashboard/lifecycle(page=${currentPage - 1})}" class="btn btn-secondary">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                        <span style="margin: 0 1rem;" th:text="'Page ' + (${currentPage} + 1) + ' of ' + ${totalPages}">Page info</span>
+                        <a th:if="${currentPage < totalPages - 1}" th:href="@{/dashboard/lifecycle(page=${currentPage + 1})}" class="btn btn-secondary">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
-
-    <style>
-        .alert {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid transparent;
-            border-radius: 0.375rem;
-        }
-        
-        .alert-danger {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-        }
-        
-        .badge {
-            padding: 0.25em 0.6em;
-            font-size: 0.75em;
-            font-weight: 700;
-            border-radius: 0.25rem;
-            text-transform: uppercase;
-        }
-        
-        .badge-success { background-color: #28a745; color: white; }
-        .badge-info { background-color: #17a2b8; color: white; }
-        .badge-warning { background-color: #ffc107; color: #212529; }
-        .badge-danger { background-color: #dc3545; color: white; }
-        
-        .lifecycle-event {
-            font-family: 'Courier New', monospace;
-            background-color: #f8f9fa;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-            font-size: 0.875em;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            border: 1px solid #dee2e6;
-        }
-        
-        .card h3 {
-            margin-top: 0;
-            margin-bottom: 1rem;
-            color: #2c3e50;
-        }
-        
-        .text-center {
-            text-align: center;
-        }
-    </style>
 
     <script>
         function logout() {

@@ -191,10 +191,13 @@ public class EmployeeController {
     @PreAuthorize("hasRole('HR') or hasRole('ADMIN')")
     public ResponseEntity<EmployeeResponse> changeEmployeeStatus(
             @PathVariable Long id,
-            @RequestParam EmployeeStatus status,
-            @RequestParam String reason,
-            @RequestParam Long changedBy) {
-        EmployeeResponse employee = employeeService.changeEmployeeStatus(id, status, reason, changedBy);
+            @Valid @RequestBody ChangeStatusRequest request) {
+        EmployeeResponse employee = employeeService.changeEmployeeStatus(
+                id, 
+                request.getNewStatus(), 
+                request.getReason(), 
+                request.getChangedBy()
+        );
         return ResponseEntity.ok(employee);
     }
     

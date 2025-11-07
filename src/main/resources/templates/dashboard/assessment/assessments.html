@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assessments - Blackdot EMS</title>
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/assessments.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-pages.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -19,11 +18,9 @@
     <main class="main-content">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="page-header-content">
-                <div>
-                    <h2 class="page-title">Assessment Management</h2>
-                    <p class="page-subtitle">Create, manage, and monitor quarterly assessments</p>
-                </div>
+            <div>
+                <h2 class="page-title">Assessment Management</h2>
+                <p class="page-subtitle">Create, manage, and monitor quarterly assessments</p>
             </div>
             <button onclick="showCreateAssessmentModal()" class="btn btn-success">
                 <i class="fas fa-plus"></i> New Assessment
@@ -31,39 +28,29 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="quick-actions-grid">
-            <div class="action-card">
-                <h4><i class="fas fa-plus-circle"></i> Create Assessment</h4>
-                <p>Create a new quarterly assessment for employees</p>
-                <button onclick="showCreateAssessmentModal()" class="btn btn-success">
-                    <i class="fas fa-plus"></i> New Assessment
-                </button>
-            </div>
-
-            <div class="action-card">
-                <h4><i class="fas fa-eye"></i> Monitor Progress</h4>
-                <p>Track assessment completion and performance</p>
-                <button onclick="loadAssessmentProgress()" class="btn btn-primary">
-                    <i class="fas fa-chart-line"></i> View Progress
-                </button>
-            </div>
-
-            <div class="action-card">
-                <h4><i class="fas fa-clock"></i> Current Quarter</h4>
-                <p>Q4 2025 assessments and deadlines</p>
-                <button onclick="loadCurrentQuarter()" class="btn btn-warning">
-                    <i class="fas fa-calendar"></i> Q4 2025
-                </button>
+        <div class="card mb-3">
+            <div class="card-body">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <button onclick="showCreateAssessmentModal()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Create Assessment
+                    </button>
+                    <button onclick="loadAssessmentProgress()" class="btn btn-primary">
+                        <i class="fas fa-chart-line"></i> Monitor Progress
+                    </button>
+                    <button onclick="loadCurrentQuarter()" class="btn btn-warning">
+                        <i class="fas fa-calendar-alt"></i> Current Quarter
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Assessments List -->
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-list"></i> All Assessments</h4>
-                <div class="card-header-actions">
-                    <input type="text" id="searchAssessments" placeholder="Search assessments..." class="form-control" style="width: 250px;">
-                    <button onclick="refreshAssessments()" class="btn btn-primary btn-sm">
+                <h3 class="card-title"><i class="fas fa-list"></i> All Assessments</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="text" id="searchAssessments" placeholder="Search assessments..." class="form-control" style="width: 220px; padding: 0.4rem 0.65rem; font-size: 0.8rem;">
+                    <button onclick="refreshAssessments()" class="btn btn-primary">
                         <i class="fas fa-sync"></i> Refresh
                     </button>
                 </div>
@@ -94,32 +81,86 @@
 
         <!-- Assessment Progress Section -->
         <div id="progressSection" style="display: none;">
-            <h3 style="margin-bottom: 1.5rem; color: #2c3e50; display: flex; align-items: center; gap: 0.75rem;">
-                <i class="fas fa-chart-line"></i> Assessment Progress
-            </h3>
+            <h3 style="margin: 0 0 1.5rem 0; font-size: 1.25rem; font-weight: 600; color: var(--dark-text);">Assessment Progress</h3>
             
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3 id="totalAssessments">0</h3>
-                    <p><i class="fas fa-clipboard-list"></i> Total Assessments</p>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Total Assessments</span>
+                            <span class="kpi-badge badge-blue">
+                                <i class="fas fa-clipboard-check"></i>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="totalAssessments">0</div>
+                        <div class="kpi-footer">
+                            <div class="kpi-progress">
+                                <span class="kpi-trend success">
+                                    <i class="fas fa-arrow-up"></i> <span id="passRateText">0%</span> pass rate
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card success">
-                    <h3 id="completedAttempts">0</h3>
-                    <p><i class="fas fa-check-circle"></i> Completed</p>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Completed Attempts</span>
+                            <span class="kpi-badge badge-green">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="completedAttempts">0</div>
+                        <div class="kpi-footer">
+                            <div class="kpi-progress">
+                                <span class="kpi-detail">
+                                    <i class="fas fa-chart-line"></i> Assessment completions
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card warning">
-                    <h3 id="pendingAttempts">0</h3>
-                    <p><i class="fas fa-clock"></i> Pending</p>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Pending Attempts</span>
+                            <span class="kpi-badge badge-orange">
+                                <i class="fas fa-clock"></i>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="pendingAttempts">0</div>
+                        <div class="kpi-footer">
+                            <div class="kpi-progress">
+                                <span class="kpi-detail">
+                                    <i class="fas fa-hourglass-half"></i> Awaiting completion
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card info">
-                    <h3 id="overallPassRate">0%</h3>
-                    <p><i class="fas fa-percent"></i> Pass Rate</p>
+                <div class="kpi-card">
+                    <div class="kpi-content">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Overall Pass Rate</span>
+                            <span class="kpi-badge badge-purple">
+                                <i class="fas fa-percent"></i>
+                            </span>
+                        </div>
+                        <div class="kpi-value" id="overallPassRate">0%</div>
+                        <div class="kpi-footer">
+                            <div class="kpi-progress">
+                                <span class="kpi-detail">
+                                    <i class="fas fa-trophy"></i> Success rate
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h4>Assessment Details</h4>
+                    <h3 class="card-title"><i class="fas fa-table"></i> Assessment Details</h3>
                 </div>
                 <div class="table-responsive">
                     <table class="table">
@@ -226,7 +267,7 @@
                         <h4 style="margin: 0; color: #2c3e50;">
                             <i class="fas fa-list"></i> Questions (<span id="questionCount">0</span>)
                         </h4>
-                        <button onclick="showAddQuestionForm()" class="btn btn-success btn-sm">
+                        <button onclick="showAddQuestionForm()" class="btn btn-success">
                             <i class="fas fa-plus"></i> Add Question
                         </button>
                     </div>
@@ -268,7 +309,7 @@
                     <div id="optionsContainer" style="margin-top: 1rem; display: none;">
                         <label class="form-label">Answer Options</label>
                         <div id="optionsList"></div>
-                        <button type="button" onclick="addOption()" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem;">
+                        <button type="button" onclick="addOption()" class="btn btn-secondary" style="margin-top: 0.5rem;">
                             <i class="fas fa-plus"></i> Add Option
                         </button>
                     </div>
@@ -491,6 +532,7 @@
             document.getElementById('completedAttempts').textContent = totalCompletedAttempts;
             document.getElementById('pendingAttempts').textContent = totalPendingAttempts;
             document.getElementById('overallPassRate').textContent = overallPassRate + '%';
+            document.getElementById('passRateText').textContent = overallPassRate + '%';
 
             // Build progress table with real data
             const progressTableBody = document.getElementById('progressTableBody');
@@ -682,10 +724,10 @@
                             </span>
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
-                            <button onclick="editQuestion(${q.id})" class="btn btn-primary btn-sm" title="Edit">
+                            <button onclick="editQuestion(${q.id})" class="btn btn-primary" title="Edit">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button onclick="deleteQuestion(${q.id})" class="btn btn-danger btn-sm" title="Delete">
+                            <button onclick="deleteQuestion(${q.id})" class="btn btn-danger" title="Delete">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -792,8 +834,8 @@
                 </label>
                 <button type="button" 
                         onclick="this.parentElement.remove()" 
-                        class="btn btn-danger btn-sm"
-                        style="padding: 0.375rem 0.75rem;">
+                        class="btn btn-danger"
+                        style="padding: 0.5rem 1rem;">
                     <i class="fas fa-times"></i>
                 </button>
             `;

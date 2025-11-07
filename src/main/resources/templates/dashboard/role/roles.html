@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Role Management - Blackdot EMS</title>
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/roles.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-pages.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -31,16 +30,20 @@
         </div>
 
         <!-- View Buttons -->
-        <div class="view-buttons" th:if="${canManageRoles}">
-            <button onclick="loadAllRoles()" class="btn btn-secondary">
-                <i class="fas fa-list"></i> All Roles
-            </button>
-            <button onclick="loadSystemRoles()" class="btn btn-secondary">
-                <i class="fas fa-shield-alt"></i> System Roles
-            </button>
-            <button onclick="loadCustomRoles()" class="btn btn-secondary">
-                <i class="fas fa-user-cog"></i> Custom Roles
-            </button>
+        <div class="card mb-3" th:if="${canManageRoles}">
+            <div class="card-body">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <button onclick="loadAllRoles()" class="btn btn-primary">
+                        <i class="fas fa-list"></i> All Roles
+                    </button>
+                    <button onclick="loadSystemRoles()" class="btn btn-secondary">
+                        <i class="fas fa-shield-alt"></i> System Roles
+                    </button>
+                    <button onclick="loadCustomRoles()" class="btn btn-info">
+                        <i class="fas fa-user-cog"></i> Custom Roles
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Roles Table Card -->
@@ -108,7 +111,7 @@
                     <div class="form-group">
                         <label class="form-label">
                             Permissions <span class="text-danger">*</span>
-                            <button type="button" onclick="toggleAllPermissions()" class="btn btn-sm" style="margin-left: 1rem; padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                            <button type="button" onclick="toggleAllPermissions()" class="btn btn-secondary" style="margin-left: 1rem;">
                                 <i class="fas fa-check-double"></i> Select All
                             </button>
                         </label>

@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Management - Blackdot EMS</title>
-    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
-    <link rel="stylesheet" th:href="@{/css/tasks.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-pages.css}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -31,22 +30,30 @@
         </div>
 
         <!-- View Buttons -->
-        <div class="view-buttons" th:if="${canAssignTasks}">
-            <button onclick="loadAllTasks()" class="btn">
-                <i class="fas fa-list"></i> All Tasks
-            </button>
-            <button onclick="loadMyCreatedTasks()" class="btn">
-                <i class="fas fa-user-check"></i> Tasks I Created
-            </button>
-            <button onclick="loadOverdueTasks()" class="btn btn-danger">
-                <i class="fas fa-exclamation-triangle"></i> Overdue
-            </button>
+        <div class="card mb-3" th:if="${canAssignTasks}">
+            <div class="card-body">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <button onclick="loadAllTasks()" class="btn btn-primary">
+                        <i class="fas fa-list"></i> All Tasks
+                    </button>
+                    <button onclick="loadMyCreatedTasks()" class="btn btn-secondary">
+                        <i class="fas fa-user-check"></i> Tasks I Created
+                    </button>
+                    <button onclick="loadOverdueTasks()" class="btn btn-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Overdue
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="view-buttons" th:unless="${canAssignTasks}">
-            <button onclick="loadMyTasks()" class="btn btn-primary">
-                <i class="fas fa-list"></i> My Tasks
-            </button>
+        <div class="card mb-3" th:unless="${canAssignTasks}">
+            <div class="card-body">
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <button onclick="loadMyTasks()" class="btn btn-primary">
+                        <i class="fas fa-list"></i> My Tasks
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Filters Card -->
